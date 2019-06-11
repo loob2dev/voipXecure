@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_margin="20dp"
+        android:id="@+id/textView6"
+        style="@style/font6"
+        android:layout_marginTop="20px"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SET XECURE VoIP PASS" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TYPE IN YOUR EXISTING PASSWORD"
+            style="@style/detail_label"/>
+
+        <EditText
+            android:id="@+id/id_edtOldPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPassword" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/detail_label"
+            android:text="TYPE IN YOUR NEW PASSWORD" />
+
+        <EditText
+            android:id="@+id/id_edtNewPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPassword" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="match_parent"
+            style="@style/detail_label"
+            android:layout_height="wrap_content"
+            android:text="CONFIRM NEW PASSWORD" />
+
+        <EditText
+            android:id="@+id/id_edtConPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10" />
+    </LinearLayout>
+    <Button
+        android:id="@+id/btn_changePass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/assistant_button"
+        android:textColor="@drawable/assistant_button_text_color"
+        android:text="CHANGE PASSWORD"
+        style="@style/detail_label"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"/>
+</LinearLayout>

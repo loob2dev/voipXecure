@@ -1,0 +1,148 @@
+package com.XECUREVoIP.assistant;
+/*
+RemoteProvisioningLoginActivity.java
+Copyright (C) 2017  Belledonne Communications, Grenoble, France
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.XECUREVoIP.R;
+import com.XECUREVoIP.XecurePreferences;
+import com.XECUREVoIP.xmlrpc.XmlRpcHelper;
+import com.XECUREVoIP.xmlrpc.XmlRpcListenerBase;
+import com.XECUREVoIP.XecureManager;
+
+
+import org.linphone.core.LinphoneCore;
+import org.linphone.core.LinphoneCoreListenerBase;
+
+public class RemoteProvisioningLoginActivity extends Activity implements OnClickListener {
+	private EditText login, password, domain;
+	private Button connect;
+	private LinphoneCoreListenerBase mListener;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.assistant_remote_provisioning_login);
+
+		login = (EditText) findViewById(R.id.assistant_username);
+		password = (EditText) findViewById(R.id.assistant_password);
+		domain = (EditText) findViewById(R.id.assistant_domain);
+
+		connect = (Button) findViewById(R.id.assistant_connect);
+		connect.setOnClickListener(this);
+
+		String defaultDomain = getIntent().getStringExtra("Domain");
+		if (defaultDomain != null) {
+			domain.setText(defaultDomain);
+			domain.setEnabled(false);
+		}
+
+		mListener = new LinphoneCoreListenerBase(){
+			@Override
+			public void configuringStatus(LinphoneCore lc, final LinphoneCore.RemoteProvisioningState state, String message) {
+				if (state == LinphoneCore.RemoteProvisioningState.ConfiguringSuccessful) {
+					//TODO
+				} else if (state == LinphoneCore.RemoteProvisioningState.ConfiguringFailed) {
+					Toast.makeText(RemoteProvisioningLoginActivity.this, R.string.remote_provisioning_failure, Toast.LENGTH_LONG).show();
+				}
+			}
+		};
+	}
+
+	private void cancelWizard(boolean bypassCheck) {
+		if (bypassCheck || getResources().getBoolean(R.bool.allow_cancel_remote_provisioning_login_activity)) {
+			XecurePreferences.instance().disableProvisioningLoginView();
+			setResult(bypassCheck ? Activity.RESULT_OK : Activity.RESULT_CANCELED);
+			finish();
+		}
+	}
+
+	private boolean storeAccount(String username, String password, String domain) {
+		XmlRpcHelper xmlRpcHelper = new XmlRpcHelper();
+		xmlRpcHelper.getRemoteProvisioningFilenameAsync(new XmlRpcListenerBase() {
+			@Override
+			public void onRemoteProvisioningFilenameSent(String result) {
+				XecurePreferences.instance().setRemoteProvisioningUrl(result);
+				XecureManager.getInstance().restartLinphoneCore();
+			}
+		}, username.toString(), password.toString(), domain.toString());
+
+		XecurePreferences.instance().firstLaunchSuccessful();
+		setResult(Activity.RESULT_OK);
+		finish();
+		/*String identity = "sip:" + username + "@" + domain;
+		LinphoneProxyConfig prxCfg = lc.createProxyConfig();
+		try {
+			prxCfg.setIdentity(identity);
+			lc.addProxyConfig(prxCfg);
+		} catch (LinphoneCoreException e) {
+			Log.e(e);
+			return false;
+		}
+
+		LinphoneAuthInfo authInfo = LinphoneCoreFactory.instance().createAuthInfo(username, null, password, null, null, domain);
+		lc.addAuthInfo(authInfo);
+
+		if (XecurePreferences.instance().getAccountCount() == 1)
+			lc.setDefaultProxyConfig(prxCfg);
+		*/
+		return true;
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		LinphoneCore lc = XecureManager.getLcIfManagerNotDestroyedOrNull();
+		if (lc != null) {
+			lc.addListener(mListener);
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		LinphoneCore lc = XecureManager.getLcIfManagerNotDestroyedOrNull();
+		if (lc != null) {
+			lc.removeListener(mListener);
+		}
+		super.onPause();
+	}
+
+	@Override
+	public void onClick(View v) {
+		int id = v.getId();
+
+		if (id == R.id.cancel) {
+			cancelWizard(false);
+		}
+		if (id == R.id.assistant_connect){
+			storeAccount(login.getText().toString(), password.getText().toString(), domain.getText().toString());
+		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		cancelWizard(false);
+	}
+}

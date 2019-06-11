@@ -1,0 +1,68 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorH"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.XECUREVoIP.security.changeSecurity.ConfirmPattenFragment">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:src="@drawable/splash_bk_transparent"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_marginLeft="@dimen/gen_layout_margin"
+        android:layout_marginRight="@dimen/gen_layout_margin"
+        android:orientation="vertical"
+        android:weightSum="10">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="2">
+            <TextView
+                style="@style/font8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:text="@string/change_app_pattern" />
+            <TextView
+                android:id="@+id/alertText"
+                style="@style/font9"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/change_app_old_pattern_notify" />
+        </LinearLayout>
+
+        <com.andrognito.patternlockview.PatternLockView
+            android:id="@+id/pattern_lock_view"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="7"
+            android:layout_centerInParent="true"
+            app:dotNormalSize="10dp"
+            app:dotSelectedSize="20dp"
+            app:normalStateColor="@color/colorD"
+            app:correctStateColor="@color/colorD"/>
+        <Button
+            android:id="@+id/id_btnRedraw"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Redraw"
+            style="@style/detail_label"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/assistant_button"
+            android:textColor="@drawable/assistant_button_text_color"
+            android:visibility="invisible"/>
+    </LinearLayout>
+</RelativeLayout>

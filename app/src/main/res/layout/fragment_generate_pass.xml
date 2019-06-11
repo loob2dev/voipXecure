@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+
+
+    tools:context="com.XECUREVoIP.security.createSecurity.GenPassFragment">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_marginLeft="@dimen/gen_layout_margin"
+        android:layout_marginRight="@dimen/gen_layout_margin"
+        android:background="@drawable/login_background">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <TextView
+                style="@style/font8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:text="@string/set_app_pass"/>
+            <TextView
+                android:id="@+id/alertText"
+                style="@style/font9"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/set_app_pattern_alert_least" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:gravity="center_horizontal">
+            <EditText
+                android:id="@+id/id_edtPass"
+                style="@style/detail_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorB"
+                android:layout_marginBottom="@dimen/password_textview_margin"
+                android:layout_marginTop="@dimen/password_textview_margin"
+                android:ems="10"
+                android:hint="@string/asterisk_password"
+                android:inputType="textPassword" />
+
+            <EditText
+                style="@style/detail_label"
+                android:id="@+id/id_edtConfirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorB"
+                android:layout_marginBottom="@dimen/password_textview_margin"
+                android:layout_marginTop="@dimen/password_textview_margin"
+                android:ems="10"
+                android:hint="@string/asterisk_confirm_password"
+                android:inputType="textPassword" />
+
+            <Button
+                android:id="@+id/id_btnSet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SET PASSWORD"
+                style="@style/detail_label"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/assistant_button"
+                android:textColor="@drawable/assistant_button_text_color" />
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>
