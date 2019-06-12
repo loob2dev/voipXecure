@@ -1011,7 +1011,7 @@ public final class XecureService extends Service {
 						.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
 						.setXmppDomain(serviceName)
 						.setHostnameVerifier(verifier)
-                        .enableDefaultDebugger()
+//                        .enableDefaultDebugger()
 						.setPort(9090)
 						.build();
 				connection = new XMPPTCPConnection(config);

@@ -144,7 +144,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			newChatConversation = true;
 		} else {
 			//Retrieve parameter from intent
-			sipUri = getArguments().getString("SipUri");
+			sipUri = getArguments().getString("entryId");
 			newChatConversation = false;
 		}
 
@@ -232,7 +232,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				dialog.show();
 				break;
 			case R.id.start_call:
-				XecureActivity.instance().setAddresGoToDialerAndCall(sipUri, XecureUtils.getUsernameFromAddress(sipUri), null);
+				XecureActivity.instance().setAddresGoToDialerAndCall(XecureUtils.getDisplayableUsernameFromAddress(sipUri), sipUri, null);
 				break;
 		}
 	}
@@ -244,11 +244,11 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
 			exitNewConversationMode();
+			sipUri = searchContactField.getText().toString();
 		}
 		XecureChatMessage xecureMessage =  mChatRoom.sendMessage(message.getText().toString());
 		message.setText("");
-		adapter.add(xecureMessage);
-		messagesList.deferNotifyDataSetChanged();
+		adapter.notifyDataSetChanged();
 		messagesList.setSelection(adapter.getCount() - 1);
 	}
 
@@ -485,9 +485,6 @@ public class ChatFragment extends Fragment implements OnClickListener{
 					cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
 					cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
 		}
-		public void add(XecureChatMessage message) {
-			messages.add(message);
-		}
 	}
 	private void exitNewConversationMode() {
 		searchContactField.setVisibility(View.GONE);
@@ -515,8 +512,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			if (id != null && id.compareTo(mChatRoom.getAddress()) == 0){
 				XecureChatMessage message = (XecureChatMessage) msg.obj;
 				message.read();
-
-				adapter.add(message);
+				adapter.notifyDataSetChanged();
 				messagesList.deferNotifyDataSetChanged();
 				messagesList.setSelection(adapter.getCount() - 1);
 

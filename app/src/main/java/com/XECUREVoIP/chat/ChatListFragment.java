@@ -383,11 +383,13 @@ public class ChatListFragment extends Fragment implements OnClickListener, OnIte
 
 	private void removeChatsConversation() {
 		int size = chatList.getAdapter().getCount();
+		ArrayList<XecureChatRoom> willRemove = new ArrayList<XecureChatRoom>();
 		for (int i = 0; i < size; i++) {
 			if (chatList.isItemChecked(i)) {
-				XecureManager.getInstance().getXecureChatRooms().remove(i);
+				willRemove.add(XecureManager.getInstance().getXecureChatRooms().get(i));
 			}
 		}
+		XecureManager.getInstance().getXecureChatRooms().removeAll(	willRemove);
 		quitEditMode();
 		XecureActivity.instance().updateMissedChatCount();
 	}
