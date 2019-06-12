@@ -169,10 +169,9 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			messagesList.deferNotifyDataSetChanged();
 			messagesList.setSelection(adapter.getCount() - 1);
 			((XecureActivity)getActivity()).updateMissedChatCount();
-
-			XecureService.instance().setChatHandler(mReceiveMessage);
 		}
 
+		XecureService.instance().setChatHandler(mReceiveMessage);
 		return view;
 	}
 
