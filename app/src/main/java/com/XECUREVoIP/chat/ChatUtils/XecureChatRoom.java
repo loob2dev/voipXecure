@@ -1,5 +1,6 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
+import android.util.Base64;
 import android.util.Log;
 
 import com.XECUREVoIP.Service.XecureService;
@@ -14,19 +15,21 @@ import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 public class XecureChatRoom {
     private String mEntryId;
     private ArrayList<XecureChatMessage> mMessages;
     private final String TAG = "XECURE CHAT";
+    private byte[] mKey;
 
     public XecureChatRoom(String entry) {
         mEntryId = entry;
         mMessages = new ArrayList<XecureChatMessage>();
     }
 
-    public XecureChatMessage sendMessage(String message) {
+    public XecureChatMessage sendMessage(String message, PublicKey publicKey) {
         XecureChatMessage xecureMessage = new XecureChatMessage(message, true);
         xecureMessage.read();
         EntityBareJid jid = null;
@@ -42,6 +45,12 @@ public class XecureChatRoom {
             Chat chat = chatManager.chatWith(jid);
             Message newMessage = new Message();
             newMessage.setBody(message);
+            if (publicKey != null){
+                byte[] publicKeyBytes = Base64.encode(publicKey.getEncoded(),0);
+                String pubKey = new String(publicKeyBytes);
+                newMessage.setSubject(pubKey);
+            }
+
 
             try {
                 chat.send(newMessage);
@@ -84,5 +93,9 @@ public class XecureChatRoom {
 
     public void createNewMessage(XecureChatMessage message) {
         mMessages.add(message);
+    }
+
+    public void setXecureKey(byte[] xecureKey) {
+        mKey = xecureKey;
     }
 }

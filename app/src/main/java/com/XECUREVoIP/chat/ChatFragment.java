@@ -56,6 +56,7 @@ import com.XECUREVoIP.XecureManager;
 import com.XECUREVoIP.XecureUtils;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatRoom;
+import com.XECUREVoIP.chat.ChatUtils.XecureDH;
 import com.XECUREVoIP.compatibility.Compatibility;
 import com.XECUREVoIP.contacts.ContactEditorFragment;
 
@@ -64,6 +65,7 @@ import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener;
 import org.jxmpp.jid.EntityBareJid;
 
+import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -237,6 +239,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	}
 
 	private void sendTextMessage() {
+		PublicKey publicKey = null;
 		if (newChatConversation) {
 			mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
             XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
@@ -244,8 +247,13 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			messagesList.setAdapter(adapter);
 			exitNewConversationMode();
 			sipUri = searchContactField.getText().toString();
+			XecureDH xecureDH = new XecureDH();
+			xecureDH.generateKeys();
+			publicKey = xecureDH.getPublicKey();
+			xecureDH.generateCommonSecretKey();
+			mChatRoom.setXecureKey(xecureDH.getXecureKey());
 		}
-		XecureChatMessage xecureMessage =  mChatRoom.sendMessage(message.getText().toString());
+		XecureChatMessage xecureMessage =  mChatRoom.sendMessage(message.getText().toString(), publicKey);
 		message.setText("");
 		adapter.notifyDataSetChanged();
 		messagesList.setSelection(adapter.getCount() - 1);

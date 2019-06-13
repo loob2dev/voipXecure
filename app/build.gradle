@@ -4,7 +4,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.xecure.voip.androidprojects"
-        minSdkVersion 19
+        minSdkVersion 23
         targetSdkVersion 27
         versionCode 10
         versionName "0.66"
