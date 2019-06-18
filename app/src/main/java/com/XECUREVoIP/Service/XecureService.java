@@ -1033,8 +1033,7 @@ public final class XecureService extends Service {
 							@Override
 							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
 								XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
-
-								XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage);
+								XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
 								String fromId = from.getLocalpart().toString();
                                 displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
 								if (XecureActivity.isInstanciated()){

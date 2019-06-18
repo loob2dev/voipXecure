@@ -69,7 +69,6 @@ public class XecureDH {
 
             privateKey = keyPair.getPrivate();
             publicKey  = keyPair.getPublic();
-            receivedPublicKey = publicKey;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,11 +110,11 @@ public class XecureDH {
     /**
      * In a real life example you must serialize the public key for transferring.
      *
-     * @param  person
+     * @param  publicKey
      */
-    public void receivePublicKeyFrom(final XecureDH person) {
+    public void receivePublicKeyFrom(final PublicKey publicKey) {
 
-        receivedPublicKey = person.getPublicKey();
+        receivedPublicKey = publicKey;
     }
 
 

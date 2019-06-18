@@ -83,6 +83,7 @@ import com.XECUREVoIP.contacts.ContactsManager;
 
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
+import org.jivesoftware.smack.chat2.Chat;
 import org.linphone.core.CallDirection;
 import org.linphone.core.LinphoneAccountCreator;
 import org.linphone.core.LinphoneAddress;
@@ -621,7 +622,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		return mChatRooms;
 	}
 
-	public void add(String from, XecureChatMessage chatMessage) {
+	public void add(String from, XecureChatMessage chatMessage, Chat chat, String subject) {
 		int index = -1;
 		for (int i = 0; i < mChatRooms.size(); i++){
 			if (mChatRooms.get(i).getAddress().compareTo(from) == 0){
@@ -630,12 +631,13 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			}
 		}
 		if (index < 0){
-			XecureChatRoom chatRoom = new XecureChatRoom(from);
+			XecureChatRoom chatRoom = new XecureChatRoom(from, chat, subject);
 			chatRoom.createNewMessage(chatMessage);
 			mChatRooms.add(chatRoom);
 		}else{
 			XecureChatRoom chatRoom = mChatRooms.get(index);
 			chatRoom.createNewMessage(chatMessage);
+			chatRoom.init(chat);
 			mChatRooms.set(index, chatRoom);
 		}
 	}

@@ -239,7 +239,6 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	}
 
 	private void sendTextMessage() {
-		PublicKey publicKey = null;
 		if (newChatConversation) {
 			mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
             XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
@@ -247,13 +246,8 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			messagesList.setAdapter(adapter);
 			exitNewConversationMode();
 			sipUri = searchContactField.getText().toString();
-			XecureDH xecureDH = new XecureDH();
-			xecureDH.generateKeys();
-			publicKey = xecureDH.getPublicKey();
-			xecureDH.generateCommonSecretKey();
-			mChatRoom.setXecureKey(xecureDH.getXecureKey());
 		}
-		XecureChatMessage xecureMessage =  mChatRoom.sendMessage(message.getText().toString(), publicKey);
+		mChatRoom.sendMessage(message.getText().toString());
 		message.setText("");
 		adapter.notifyDataSetChanged();
 		messagesList.setSelection(adapter.getCount() - 1);
@@ -578,12 +572,12 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				willRemove.add(mChatRoom.getHistory().get(i));
 			}
 		}
-		if (willRemove.size() == mChatRoom.getHistory().size()){
-		    XecureManager.getInstance().getXecureChatRooms().remove(mChatRoom);
-            getFragmentManager().popBackStackImmediate();
-            XecureService.instance().setChatHandler(null);
-            return;
-        }
+//		if (willRemove.size() == mChatRoom.getHistory().size()){
+//		    XecureManager.getInstance().getXecureChatRooms().remove(mChatRoom);
+//            getFragmentManager().popBackStackImmediate();
+//            XecureService.instance().setChatHandler(null);
+//            return;
+//        }
         mChatRoom.getHistory().removeAll(willRemove);
 		adapter.notifyDataSetChanged();
 	}
