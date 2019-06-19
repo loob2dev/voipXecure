@@ -13,31 +13,41 @@ public class XecureDH {
     private PublicKey  publicKey;
     private PublicKey  receivedPublicKey;
     private byte[]     secretKey;
-    private String     secretMessage;
 
 
 
     //~ --- [METHODS] --------------------------------------------------------------------------------------------------
-
-    public void encryptAndSendMessage(final String message, final XecureDH person) {
-
+    public String encrypt(final String message) {
+        String encryptedMessage = null;
         try {
-
             // You can use Blowfish or another symmetric algorithm but you must adjust the key size.
             final SecretKeySpec keySpec = new SecretKeySpec(secretKey, "DES");
             final Cipher        cipher  = Cipher.getInstance("DES/ECB/PKCS5Padding");
 
             cipher.init(Cipher.ENCRYPT_MODE, keySpec);
 
-            final byte[] encryptedMessage = cipher.doFinal(message.getBytes());
-
-            person.receiveAndDecryptMessage(encryptedMessage);
+            encryptedMessage = new String(cipher.doFinal(message.getBytes()));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return encryptedMessage;
     }
 
+    public String decrypt(final String message) {
+        String decryptedMessage = null;
+        try {
+            // You can use Blowfish or another symmetric algorithm but you must adjust the key size.
+            final SecretKeySpec keySpec = new SecretKeySpec(secretKey, "DES");
+            final Cipher        cipher  = Cipher.getInstance("DES/ECB/PKCS5Padding");
 
+            cipher.init(Cipher.DECRYPT_MODE, keySpec);
+
+            decryptedMessage = new String(cipher.doFinal(message.getBytes()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return decryptedMessage;
+    }
 
     //~ ----------------------------------------------------------------------------------------------------------------
 
@@ -83,28 +93,6 @@ public class XecureDH {
         return publicKey;
     }
 
-
-
-    //~ ----------------------------------------------------------------------------------------------------------------
-
-    public void receiveAndDecryptMessage(final byte[] message) {
-
-        try {
-
-            // You can use Blowfish or another symmetric algorithm but you must adjust the key size.
-            final SecretKeySpec keySpec = new SecretKeySpec(secretKey, "DES");
-            final Cipher        cipher  = Cipher.getInstance("DES/ECB/PKCS5Padding");
-
-            cipher.init(Cipher.DECRYPT_MODE, keySpec);
-
-            secretMessage = new String(cipher.doFinal(message));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
     //~ ----------------------------------------------------------------------------------------------------------------
 
     /**
@@ -120,13 +108,6 @@ public class XecureDH {
 
 
     //~ ----------------------------------------------------------------------------------------------------------------
-
-    public void whisperTheSecretMessage() {
-
-        System.out.println(secretMessage);
-    }
-
-
 
     //~ ----------------------------------------------------------------------------------------------------------------
 
@@ -159,8 +140,5 @@ public class XecureDH {
         }
 
         return null;
-    }
-    public byte[] getXecureKey(){
-        return secretKey;
     }
 }

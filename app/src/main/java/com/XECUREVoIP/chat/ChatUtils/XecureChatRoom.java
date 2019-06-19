@@ -26,7 +26,9 @@ public class XecureChatRoom {
     private byte[] mKey;
     private Chat mChat;
     private XecureDH mDH;
+    private SecurityUtils mAES256;
     private boolean keyExchanged = false;
+    private boolean accepted = false;
 
     public XecureChatRoom(String entry) {
         mEntryId = entry;
@@ -34,10 +36,23 @@ public class XecureChatRoom {
         mChat = null;
         mDH = new XecureDH();
         mDH.generateKeys();
+        mAES256 = new SecurityUtils("xecurechat");
     }
 
     public boolean isAccept(){
+        return accepted;
+    }
+
+    public boolean isExchanged(){
         return keyExchanged;
+    }
+
+    public void accept(){
+        accepted = true;
+    }
+
+    public void keyExchagned(){
+        keyExchanged = true;
     }
 
     public XecureChatRoom(String entry, Chat chat, String subject) {
@@ -46,9 +61,7 @@ public class XecureChatRoom {
         mChat = chat;
         mDH = new XecureDH();
         mDH.generateKeys();
-        if (subject == null){
-
-        }
+        mAES256 = new SecurityUtils("xecurechat");
     }
 
     public void sendMessage(String message) {
@@ -73,10 +86,9 @@ public class XecureChatRoom {
                     String pubKey = new String(publicKeyBytes);
                     newMessage.setSubject(pubKey);
                     //encrypt message
-                    SecurityUtils utils = new SecurityUtils("xecurechat");
-                    newMessage.setBody(utils.encrypt(message));
+                    newMessage.setBody(mAES256.encrypt(message));
                 } else {
-
+                    newMessage.setBody(mDH.encrypt(message));
                 }
                 mChat.send(newMessage);
 
@@ -118,7 +130,17 @@ public class XecureChatRoom {
     }
 
     public void createNewMessage(XecureChatMessage message) {
-        mMessages.add(message);
+        if (keyExchanged){
+            message.setBody(mDH.decrypt(message.getBody()));
+            mMessages.add(message);
+        }else {
+            try {
+                message.setBody(mAES256.decrypt(message.getBody()));
+                mMessages.add(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void setXecureKey(byte[] xecureKey) {

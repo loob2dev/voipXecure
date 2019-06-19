@@ -1036,19 +1036,23 @@ public final class XecureService extends Service {
 								XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
 								String fromId = from.getLocalpart().toString();
                                 displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
-								if (XecureActivity.isInstanciated()){
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("idFrom", fromId);
-                                    android.os.Message msg = new android.os.Message();
-                                    msg.setData(bundle);
-                                    msg.obj = chatMessage;
-                                    if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
-                                        chatHandler.sendMessage(msg);
-                                    }
+								try {
+									if (XecureActivity.isInstanciated()){
+										Bundle bundle = new Bundle();
+										bundle.putString("idFrom", fromId);
+										android.os.Message msg = new android.os.Message();
+										msg.setData(bundle);
+										msg.obj = chatMessage;
+										if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
+											chatHandler.sendMessage(msg);
+										}
 
-                                    XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
-                                    if (chatlistHandler != null)
-                                    	chatlistHandler.sendEmptyMessage(0);
+										XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
+										if (chatlistHandler != null)
+											chatlistHandler.sendEmptyMessage(0);
+									}
+								}catch (Exception e){
+									e.printStackTrace();
 								}
 							}
 						});

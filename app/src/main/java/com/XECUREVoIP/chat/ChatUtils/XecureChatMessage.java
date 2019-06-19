@@ -36,4 +36,8 @@ public class XecureChatMessage {
     public void read() {
         mReaded = true;
     }
+
+    public void setBody(String message) {
+        mBody = message;
+    }
 }

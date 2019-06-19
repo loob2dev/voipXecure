@@ -75,10 +75,10 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private String sipUri;
 	private EditText message;
 	private ImageView edit, selectAll, deselectAll, startCall, delete, sendImage, sendMessage, cancel;
-	private TextView contactName, remoteComposing;
+	private TextView contactName, remoteComposing, waiting_accept;
 	private ImageView back, backToCall;
 	private EditText searchContactField;
-	private LinearLayout topBar, editList;
+	private LinearLayout topBar, editList, footer, button_group;
 	private ListView messagesList, resultContactsSearch;
 	private LayoutInflater inflater;
 	private Bitmap defaultBitmap;
@@ -109,12 +109,16 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 		editList = (LinearLayout) view.findViewById(R.id.edit_list);
 		topBar = (LinearLayout) view.findViewById(R.id.top_bar);
+		footer = (LinearLayout) view.findViewById(R.id.footer);
+		button_group = (LinearLayout) view.findViewById(R.id.button_group);
 
 		sendMessage = (ImageView) view.findViewById(R.id.send_message);
 		sendMessage.setOnClickListener(this);
 
 		remoteComposing = (TextView) view.findViewById(R.id.remote_composing);
 		remoteComposing.setVisibility(View.GONE);
+
+		waiting_accept = (TextView) view.findViewById(R.id.waiting_accept);
 
 		cancel = (ImageView) view.findViewById(R.id.cancel);
 		cancel.setOnClickListener(this);
@@ -142,6 +146,8 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 		message = (EditText) view.findViewById(R.id.message);
 
+
+
 		if(getArguments() == null || getArguments().getString("entryId") == null) {
 			newChatConversation = true;
 		} else {
@@ -153,7 +159,6 @@ public class ChatFragment extends Fragment implements OnClickListener{
 		if (newChatConversation) {
 			initNewChatConversation();
 		}else{
-			exitNewConversationMode();
 			String address = getArguments().getString("entryId");
 			ArrayList<XecureChatRoom> chatRooms = XecureManager.getInstance().getXecureChatRooms();
 			for (XecureChatRoom room : chatRooms){
@@ -165,6 +170,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				}
 				break;
 			}
+			exitNewConversationMode();
 
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
@@ -244,6 +250,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
             XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
+			mChatRoom.accept();
 			exitNewConversationMode();
 			sipUri = searchContactField.getText().toString();
 		}
@@ -494,6 +501,23 @@ public class ChatFragment extends Fragment implements OnClickListener{
 		contactName.setVisibility(View.VISIBLE);
 		edit.setVisibility(View.VISIBLE);
 		startCall.setVisibility(View.VISIBLE);
+		if (mChatRoom.isAccept() && !mChatRoom.isExchanged()){
+			footer.setVisibility(View.VISIBLE);
+			waiting_accept.setText(R.string.waiting_accept);
+			waiting_accept.setVisibility(View.VISIBLE);
+			button_group.setVisibility(View.GONE);
+		}else if(!mChatRoom.isAccept() && !mChatRoom.isExchanged()){
+			footer.setVisibility(View.GONE);
+			waiting_accept.setText(mChatRoom.getAddress() + getResources().getString(R.string.accept_waiting));
+			waiting_accept.setVisibility(View.VISIBLE);
+			button_group.setVisibility(View.VISIBLE);
+		}else{
+			footer.setVisibility(View.VISIBLE);
+			waiting_accept.setText(mChatRoom.getAddress() + " " + getResources().getString(R.string.accept_waiting));
+			waiting_accept.setVisibility(View.GONE);
+			button_group.setVisibility(View.GONE);
+		}
+
 
 		if(getResources().getBoolean(R.bool.isTablet)){
 			back.setVisibility(View.INVISIBLE);

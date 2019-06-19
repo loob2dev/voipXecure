@@ -67,6 +67,34 @@
 	<include layout="@layout/edit_list"/>
 
 	<LinearLayout
+        android:id="@+id/button_group"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        android:layout_above="@id/footer">
+
+        <Button
+            android:id="@+id/block"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Block"
+            android:textColor="@color/colorP"
+            android:layout_weight="0.5"
+            android:background="@drawable/assistant_button"/>
+
+        <Button
+            android:id="@+id/accept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accept"
+            android:layout_weight="0.5"
+            android:background="@drawable/assistant_button"/>
+    </LinearLayout>
+
+	<LinearLayout
 		android:id="@+id/footer"
 		android:background="@color/colorF"
 		android:layout_width="match_parent"
@@ -125,7 +153,17 @@
 		style="@style/font11"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_above="@id/footer"/>
+		android:layout_above="@id/button_group"/>
+	<TextView
+		android:id="@+id/waiting_accept"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="5dp"
+		android:gravity="center"
+		style="@style/font6"
+        android:visibility="gone"
+		android:background="@color/colorK"
+		android:layout_below="@id/top_bar"/>
 
 	<ListView
 		android:id="@+id/chat_message_list"
@@ -139,7 +177,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_margin="10dp"
-		android:layout_below="@+id/top_bar"/>
+		android:layout_below="@+id/waiting_accept"/>
 
 	<EditText
 		android:id="@+id/search_contact_field"

@@ -252,14 +252,13 @@ public class ChatListFragment extends Fragment implements OnClickListener, OnIte
 			view.setTag(holder);
 
 			XecureChatRoom chatRoom = chatRooms.get(i);
-			if (chatRoom.getLastMessage() == null)
-				return view;
-			XecureChatMessage lastMessage = chatRoom.getLastMessage();
-			String message = lastMessage.getBody();
-			Date date = lastMessage.getDate();
-			holder.date.setText(XecureUtils.timestampToHumanDate(getActivity(), date.getTime(), getString(R.string.messages_list_date_format)));
-			holder.lastMessageView.setText(message);
-
+			if (chatRoom.getLastMessage() != null){
+				XecureChatMessage lastMessage = chatRoom.getLastMessage();
+				String message = lastMessage.getBody();
+				Date date = lastMessage.getDate();
+				holder.date.setText(XecureUtils.timestampToHumanDate(getActivity(), date.getTime(), getString(R.string.messages_list_date_format)));
+				holder.lastMessageView.setText(message);
+			}
 			holder.displayName.setSelected(true); // For animation
 			holder.displayName.setText(chatRoom.getAddress());
 

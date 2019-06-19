@@ -84,6 +84,7 @@ import com.XECUREVoIP.contacts.ContactsManager;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.chat2.Chat;
+import org.jivesoftware.smack.packet.Message;
 import org.linphone.core.CallDirection;
 import org.linphone.core.LinphoneAccountCreator;
 import org.linphone.core.LinphoneAddress;
