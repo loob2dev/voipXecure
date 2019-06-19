@@ -19,6 +19,7 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
@@ -56,8 +57,7 @@ public class XecureChatRoom {
     }
 
     public void receivePublicKey(String key){
-        byte[] publicBytes = Base64.decode(key);
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+        EncodedKeySpec keySpec = new X509EncodedKeySpec(key.getBytes());
         KeyFactory keyFactory = null;
         PublicKey pubKey = null;
         try {
@@ -140,7 +140,7 @@ public class XecureChatRoom {
             Message newMessage = new Message();
             try {
                 if (!keyExchanged){
-                    byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded());
+                    byte[] publicKeyBytes = mDH.getPublicKey().getEncoded();
                     String pubKey = new String(publicKeyBytes);
                     newMessage.setSubject(pubKey);
                     //encrypt message
