@@ -1,6 +1,5 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
-import android.util.Base64;
 import android.util.Log;
 
 import com.XECUREVoIP.Service.XecureService;
@@ -12,6 +11,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.stringencoder.Base64;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
@@ -56,7 +56,7 @@ public class XecureChatRoom {
     }
 
     public void receivePublicKey(String key){
-        byte[] publicBytes = Base64.decode(key, 0);
+        byte[] publicBytes = Base64.decode(key);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
         KeyFactory keyFactory = null;
         PublicKey pubKey = null;
@@ -89,7 +89,7 @@ public class XecureChatRoom {
             }
             Message newMessage = new Message();
             try {
-                byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded(),0);
+                byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded());
                 String pubKey = new String(publicKeyBytes);
                 newMessage.setSubject(pubKey);
                 newMessage.setType(Message.Type.normal);
@@ -140,7 +140,7 @@ public class XecureChatRoom {
             Message newMessage = new Message();
             try {
                 if (!keyExchanged){
-                    byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded(),0);
+                    byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded());
                     String pubKey = new String(publicKeyBytes);
                     newMessage.setSubject(pubKey);
                     //encrypt message

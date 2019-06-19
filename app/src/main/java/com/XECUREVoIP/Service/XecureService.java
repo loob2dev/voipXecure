@@ -1032,7 +1032,7 @@ public final class XecureService extends Service {
 						chatManager.addIncomingListener(new IncomingChatMessageListener() {
 							@Override
 							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-								if (message.getType().equals(Message.Type.normal)){
+								if (message.getBody() == null){
 									XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject());
 								} else {
 									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
