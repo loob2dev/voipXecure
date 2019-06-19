@@ -16,7 +16,11 @@ import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
 public class XecureChatRoom {
@@ -51,6 +55,59 @@ public class XecureChatRoom {
         accepted = true;
     }
 
+    public void receivePublicKey(String key){
+        byte[] publicBytes = Base64.decode(key, 0);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+        KeyFactory keyFactory = null;
+        PublicKey pubKey = null;
+        try {
+            keyFactory = KeyFactory.getInstance("DH");
+            pubKey = keyFactory.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        }finally {
+            mDH.receivePublicKeyFrom(pubKey);
+            mDH.generateCommonSecretKey();
+        }
+    }
+
+    public void sendPublicKey(){
+        //share public key
+        EntityBareJid jid = null;
+        try {
+            jid = JidCreate.entityBareFrom(mEntryId + "@chat.xecu.re");
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
+        }
+        AbstractXMPPConnection connection = XecureManager.getInstance().getSmackConnection();
+        if(connection != null) {
+            if (mChat == null){
+                ChatManager chatManager = ChatManager.getInstanceFor(connection);
+                mChat = chatManager.chatWith(jid);
+            }
+            Message newMessage = new Message();
+            try {
+                byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded(),0);
+                String pubKey = new String(publicKeyBytes);
+                newMessage.setSubject(pubKey);
+                newMessage.setType(Message.Type.normal);
+                mChat.send(newMessage);
+            } catch (SmackException.NotConnectedException e) {
+                e.printStackTrace();
+                Log.e(TAG, e.getMessage());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.e(TAG, e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                mDH.generateCommonSecretKey();
+            }
+        }
+    }
+
     public void keyExchagned(){
         keyExchanged = true;
     }
@@ -62,6 +119,7 @@ public class XecureChatRoom {
         mDH = new XecureDH();
         mDH.generateKeys();
         mAES256 = new SecurityUtils("xecurechat");
+        receivePublicKey(subject);
     }
 
     public void sendMessage(String message) {

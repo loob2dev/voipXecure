@@ -80,6 +80,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private EditText searchContactField;
 	private LinearLayout topBar, editList, footer, button_group;
 	private ListView messagesList, resultContactsSearch;
+	private Button accept, block;
 	private LayoutInflater inflater;
 	private Bitmap defaultBitmap;
 
@@ -146,6 +147,10 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 		message = (EditText) view.findViewById(R.id.message);
 
+		accept = (Button) view.findViewById(R.id.accept);
+		accept.setOnClickListener(this);
+		block = (Button) view.findViewById(R.id.block);
+		block.setOnClickListener(this);
 
 
 		if(getArguments() == null || getArguments().getString("entryId") == null) {
@@ -240,6 +245,13 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				break;
 			case R.id.start_call:
 				XecureActivity.instance().setAddresGoToDialerAndCall(XecureUtils.getDisplayableUsernameFromAddress(sipUri), sipUri, null);
+				break;
+			case R.id.accept:
+				mChatRoom.accept();
+				mChatRoom.sendPublicKey();
+				mChatRoom.keyExchagned();
+				break;
+			case R.id.block:
 				break;
 		}
 	}

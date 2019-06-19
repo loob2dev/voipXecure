@@ -1032,27 +1032,31 @@ public final class XecureService extends Service {
 						chatManager.addIncomingListener(new IncomingChatMessageListener() {
 							@Override
 							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-								XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
-								XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
-								String fromId = from.getLocalpart().toString();
-                                displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
-								try {
-									if (XecureActivity.isInstanciated()){
-										Bundle bundle = new Bundle();
-										bundle.putString("idFrom", fromId);
-										android.os.Message msg = new android.os.Message();
-										msg.setData(bundle);
-										msg.obj = chatMessage;
-										if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
-											chatHandler.sendMessage(msg);
-										}
+								if (message.getType().equals(Message.Type.normal)){
+									XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject());
+								} else {
+									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
+									XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
+									String fromId = from.getLocalpart().toString();
+									displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
+									try {
+										if (XecureActivity.isInstanciated()){
+											Bundle bundle = new Bundle();
+											bundle.putString("idFrom", fromId);
+											android.os.Message msg = new android.os.Message();
+											msg.setData(bundle);
+											msg.obj = chatMessage;
+											if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
+												chatHandler.sendMessage(msg);
+											}
 
-										XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
-										if (chatlistHandler != null)
-											chatlistHandler.sendEmptyMessage(0);
+											XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
+											if (chatlistHandler != null)
+												chatlistHandler.sendEmptyMessage(0);
+										}
+									}catch (Exception e){
+										e.printStackTrace();
 									}
-								}catch (Exception e){
-									e.printStackTrace();
 								}
 							}
 						});

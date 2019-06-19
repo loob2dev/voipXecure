@@ -643,6 +643,23 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		}
 	}
 
+
+	public void receivePulicKey(String entryId, String subject) {
+		int index = -1;
+		for (int i = 0; i < mChatRooms.size(); i++){
+			if (mChatRooms.get(i).getAddress().compareTo(entryId) == 0){
+				index = i;
+				break;
+			}
+		}
+		if (index >= 0){
+			XecureChatRoom chatRoom = mChatRooms.get(index);
+			chatRoom.receivePublicKey(subject);
+			chatRoom.keyExchagned();
+		}
+	}
+
+
 	public static interface AddressType {
 		void setText(CharSequence s);
 		CharSequence getText();
