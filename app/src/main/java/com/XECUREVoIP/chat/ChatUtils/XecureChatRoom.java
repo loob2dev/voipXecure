@@ -2,7 +2,6 @@ package com.XECUREVoIP.chat.ChatUtils;
 
 import android.util.Log;
 
-import com.XECUREVoIP.Service.XecureService;
 import com.XECUREVoIP.XecureManager;
 import com.XECUREVoIP.security.SecurityUtils;
 
@@ -19,9 +18,7 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
 public class XecureChatRoom {
@@ -63,13 +60,11 @@ public class XecureChatRoom {
         PublicKey pubKey = null;
         try {
             pubKey = mDH.loadEcPublicKey(publicKeyBytes);
+            mDH.receivePublicKeyFrom(pubKey);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
-        }finally {
-            mDH.receivePublicKeyFrom(pubKey);
-            mDH.generateCommonSecretKey();
         }
     }
 
@@ -89,10 +84,10 @@ public class XecureChatRoom {
             }
             Message newMessage = new Message();
             try {
-                byte[] publicKeyBytes = Base64.encode(mDH.getPublicKey().getEncoded());
+                byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.encode(mDH.getPublicKey().getEncoded());
                 String pubKey = new String(publicKeyBytes);
                 newMessage.setSubject(pubKey);
-                newMessage.setType(Message.Type.normal);
+                newMessage.setBody(null);
                 mChat.send(newMessage);
             } catch (SmackException.NotConnectedException e) {
                 e.printStackTrace();
@@ -102,8 +97,6 @@ public class XecureChatRoom {
                 Log.e(TAG, e.getMessage());
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                mDH.generateCommonSecretKey();
             }
         }
     }
