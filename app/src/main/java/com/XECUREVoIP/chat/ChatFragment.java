@@ -249,7 +249,6 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			case R.id.accept:
 				mChatRoom.accept();
 				mChatRoom.sendPublicKey();
-				mChatRoom.keyExchagned();
 				break;
 			case R.id.block:
 				break;

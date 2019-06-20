@@ -58,12 +58,11 @@ public class XecureChatRoom {
 
     public void receivePublicKey(String key){
         byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.decode(key.getBytes());
-        EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+
         KeyFactory keyFactory = null;
         PublicKey pubKey = null;
         try {
-            keyFactory = KeyFactory.getInstance("DH");
-            pubKey = keyFactory.generatePublic(keySpec);
+            pubKey = mDH.loadEcPublicKey(publicKeyBytes);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {

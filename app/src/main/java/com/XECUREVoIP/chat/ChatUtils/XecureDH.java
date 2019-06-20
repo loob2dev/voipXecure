@@ -1,14 +1,25 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.ECPointUtil;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
+import org.spongycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.spongycastle.jce.spec.ECNamedCurveSpec;
 
+import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -167,5 +178,22 @@ public class XecureDH {
         }
 
         return null;
+    }
+
+    public PublicKey loadEcPublicKey(byte [] pubKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        final ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp224k1");
+        KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance(ECDH, BouncyCastleProvider.PROVIDER_NAME);
+        }
+        catch (final NoSuchProviderException e) {
+            kf = KeyFactory.getInstance(ECDH);
+        }
+//        final ECNamedCurveSpec params = new ECNamedCurveSpec("secp224k1", spec.getCurve(), spec.getG(), spec.getN());
+//
+//        final ECPoint point =  ECPointUtil.decodePoint(params.getCurve(), pubKey);
+//        final java.security.spec.ECPublicKeySpec pubKeySpec = new java.security.spec.ECPublicKeySpec(point, params);
+        EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKey);
+        return kf.generatePublic(pubKeySpec);
     }
 }
