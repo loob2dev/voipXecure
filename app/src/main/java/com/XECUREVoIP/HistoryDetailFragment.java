@@ -118,8 +118,8 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 		if (lAddress != null) {
 
 			String strAdress = lAddress.asStringUriOnly().contains(":8161") ?
-					lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@xecu.re:8161", "")
-					: lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@xecu.re", "");
+					lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@136.144.213.201:8161", "")
+					: lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@136.144.213.201", "");
 			contactAddress.setText(strAdress);
 			contact = ContactsManager.getInstance().findContactFromAddress(lAddress);
 			if (contact != null) {
@@ -176,7 +176,10 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 			}
 			XecureActivity.instance().setAddresGoToDialerAndCall(sipUri, displayName, pictureUri == null ? null : Uri.parse(pictureUri));
 		} else if (id == R.id.chat) {
-			XecureActivity.instance().displayChat(sipUri, null, null);
+			String strAdress = sipUri.contains(":8161") ?
+					sipUri.replace("sip:", "NUMBER:").replace("@136.144.213.201:8161", "")
+					: sipUri.replace("sip:", "NUMBER:").replace("@136.144.213.201", "");
+			XecureActivity.instance().displayChat(strAdress, null, null);
 		} else if (id == R.id.add_contact) {
 			String uri = sipUri;
 			LinphoneAddress addr = null;
