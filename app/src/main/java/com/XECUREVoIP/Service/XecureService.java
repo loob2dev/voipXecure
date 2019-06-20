@@ -1034,6 +1034,13 @@ public final class XecureService extends Service {
 							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
 								if (message.getBody().compareTo("") == 0){
 									XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject());
+									if (XecureActivity.isInstanciated()){
+										if (chatlistHandler != null) {
+											android.os.Message msg = new android.os.Message();
+											msg.arg1 = 0;
+											chatHandler.sendMessage(msg);
+										}
+									}
 								} else {
 									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
 									XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
@@ -1046,13 +1053,14 @@ public final class XecureService extends Service {
 											android.os.Message msg = new android.os.Message();
 											msg.setData(bundle);
 											msg.obj = chatMessage;
+											msg.arg1 = 1;
 											if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
 												chatHandler.sendMessage(msg);
 											}
-
 											XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
-											if (chatlistHandler != null)
+											if (chatlistHandler != null) {
 												chatlistHandler.sendEmptyMessage(0);
+											}
 										}
 									}catch (Exception e){
 										e.printStackTrace();

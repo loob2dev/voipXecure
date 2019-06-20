@@ -562,18 +562,24 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private Handler mReceiveMessage = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
-			Bundle bundle = msg.getData();
-			String id = bundle.getString("idFrom");
+			switch (msg.arg1){
+				case 0:
+					exitNewConversationMode();
+					break;
+				case 1:
+					Bundle bundle = msg.getData();
+					String id = bundle.getString("idFrom");
 
-			if (id != null && id.compareTo(mChatRoom.getAddress()) == 0){
-				XecureChatMessage message = (XecureChatMessage) msg.obj;
-				message.read();
-				adapter.notifyDataSetChanged();
-				messagesList.deferNotifyDataSetChanged();
-				messagesList.setSelection(adapter.getCount() - 1);
+					if (id != null && id.compareTo(mChatRoom.getAddress()) == 0){
+						XecureChatMessage message = (XecureChatMessage) msg.obj;
+						message.read();
+						adapter.notifyDataSetChanged();
+						messagesList.deferNotifyDataSetChanged();
+						messagesList.setSelection(adapter.getCount() - 1);
 
+					}
+					XecureActivity.instance().updateMissedChatCount();
 			}
-			XecureActivity.instance().updateMissedChatCount();
 			super.handleMessage(msg);
 		}
 	};
