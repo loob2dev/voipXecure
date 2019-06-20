@@ -1,5 +1,7 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
+import com.XECUREVoIP.security.SecurityUtils;
+
 import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.ECPointUtil;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -40,31 +42,22 @@ public class XecureDH {
 
     //~ --- [METHODS] --------------------------------------------------------------------------------------------------
     public String encrypt(final String message) {
+        SecurityUtils utils = new SecurityUtils(new String(secretKey));
         String encryptedMessage = null;
         try {
-            // You can use Blowfish or another symmetric algorithm but you must adjust the key size.
-            final SecretKeySpec keySpec = new SecretKeySpec(secretKey, "DES");
-            final Cipher        cipher  = Cipher.getInstance("DES/ECB/PKCS5Padding");
-
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-
-            encryptedMessage = new String(cipher.doFinal(message.getBytes()));
+            encryptedMessage = utils.encrypt(message);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return encryptedMessage;
     }
 
     public String decrypt(final String message) {
+        SecurityUtils utils = new SecurityUtils(new String(secretKey));
         String decryptedMessage = null;
         try {
-            // You can use Blowfish or another symmetric algorithm but you must adjust the key size.
-            final SecretKeySpec keySpec = new SecretKeySpec(secretKey, "DES");
-            final Cipher        cipher  = Cipher.getInstance("DES/ECB/PKCS5Padding");
-
-            cipher.init(Cipher.DECRYPT_MODE, keySpec);
-
-            decryptedMessage = new String(cipher.doFinal(message.getBytes()));
+            decryptedMessage = utils.decrypt(message);
         } catch (Exception e) {
             e.printStackTrace();
         }

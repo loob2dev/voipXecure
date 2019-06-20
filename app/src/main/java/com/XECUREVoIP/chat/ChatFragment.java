@@ -115,6 +115,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 		sendMessage = (ImageView) view.findViewById(R.id.send_message);
 		sendMessage.setOnClickListener(this);
+		sendMessage.setEnabled(false);
 
 		remoteComposing = (TextView) view.findViewById(R.id.remote_composing);
 		remoteComposing.setVisibility(View.GONE);
@@ -146,12 +147,30 @@ public class ChatFragment extends Fragment implements OnClickListener{
 		back.setOnClickListener(this);
 
 		message = (EditText) view.findViewById(R.id.message);
+		message.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+				if (charSequence.length() == 0)
+					sendMessage.setEnabled(false);
+				else
+					sendMessage.setEnabled(true);
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+
+			}
+		});
 
 		accept = (Button) view.findViewById(R.id.accept);
 		accept.setOnClickListener(this);
 		block = (Button) view.findViewById(R.id.block);
 		block.setOnClickListener(this);
-
 
 		if(getArguments() == null || getArguments().getString("entryId") == null) {
 			newChatConversation = true;
@@ -249,6 +268,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			case R.id.accept:
 				mChatRoom.accept();
 				mChatRoom.sendPublicKey();
+				exitNewConversationMode();
 				break;
 			case R.id.block:
 				break;
@@ -258,7 +278,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private void sendTextMessage() {
 		if (newChatConversation) {
 			mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
-            XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
+			XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
 			mChatRoom.accept();
@@ -613,7 +633,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 //            XecureService.instance().setChatHandler(null);
 //            return;
 //        }
-        mChatRoom.getHistory().removeAll(willRemove);
+		mChatRoom.getHistory().removeAll(willRemove);
 		adapter.notifyDataSetChanged();
 	}
 }

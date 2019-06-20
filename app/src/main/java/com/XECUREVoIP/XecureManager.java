@@ -289,8 +289,8 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			@Override
 			public void OnProgress(final int current, final int max) {
 				mHandler.post(new Runnable() {
-						@Override
-						public void run() {
+					@Override
+					public void run() {
 						OpenH264DownloadHelper ohcodec = XecureManager.getInstance().getOpenH264DownloadHelper();
 						if (progress == null) {
 							progress = new ProgressDialog((Context) ohcodec.getUserData(ctxt));
@@ -312,14 +312,14 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 							}
 						}
 					}
-					});
+				});
 			}
 
 			@Override
 			public void OnError(final String error) {
 				mHandler.post(new Runnable() {
-						@Override
-						public void run() {
+					@Override
+					public void run() {
 						if (progress != null) progress.dismiss();
 						AlertDialog.Builder builder = new AlertDialog.Builder((Context) XecureManager.getInstance().getOpenH264DownloadHelper().getUserData(ctxt));
 						builder.setMessage(getString(R.string.assistant_openh264_error));
@@ -327,7 +327,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 						builder.setNeutralButton(getString(R.string.ok), null);
 						builder.show();
 					}
-					});
+				});
 			}
 		};
 		mCodecDownloader.setOpenH264HelperListener(mCodecListener);
@@ -655,7 +655,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		if (index >= 0){
 			XecureChatRoom chatRoom = mChatRooms.get(index);
 			chatRoom.receivePublicKey(subject);
-//			chatRoom.keyExchagned();
+			chatRoom.keyExchagned();
 		}
 	}
 
@@ -1299,7 +1299,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	@Override
 	public void messageReceivedUnableToDecrypted(LinphoneCore lc, LinphoneChatRoom cr,
-                                                 LinphoneChatMessage message) {
+												 LinphoneChatMessage message) {
 		if (mServiceContext.getResources().getBoolean(R.bool.disable_chat)) {
 			return;
 		}
@@ -1460,8 +1460,8 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			}
 		} else if (state == State.IncomingReceived && (XecurePreferences.instance().isAutoAnswerEnabled()) && !getCallGsmON()) {
 			TimerTask lTask = new TimerTask() {
-					@Override
-					public void run() {
+				@Override
+				public void run() {
 					if (mLc != null) {
 						try {
 							if (mLc.getCallsNb() > 0) {
@@ -1565,7 +1565,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 	public void callStatsUpdated(final LinphoneCore lc, final LinphoneCall call, final LinphoneCallStats stats) {}
 
 	public void callEncryptionChanged(LinphoneCore lc, LinphoneCall call,
-                                      boolean encrypted, String authenticationToken) {
+									  boolean encrypted, String authenticationToken) {
 	}
 
 	public void startEcCalibration(LinphoneCoreListener l) throws LinphoneCoreException {
@@ -1810,7 +1810,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 		LinphoneCall.State state = currentCall.getState();
 		boolean incomingPending = currentCall.getDirection() == CallDirection.Incoming
-			&& (state == State.IncomingReceived || state == State.CallIncomingEarlyMedia);
+				&& (state == State.IncomingReceived || state == State.CallIncomingEarlyMedia);
 
 		return incomingPending ? currentCall : null;
 	}
@@ -1907,11 +1907,11 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	@Override
 	public void notifyReceived(LinphoneCore lc, LinphoneCall call,
-                               LinphoneAddress from, byte[] event) {
+							   LinphoneAddress from, byte[] event) {
 	}
 	@Override
 	public void transferState(LinphoneCore lc, LinphoneCall call,
-                              State new_call_state) {
+							  State new_call_state) {
 
 	}
 	@Override
@@ -1924,19 +1924,19 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 	}
 	@Override
 	public void subscriptionStateChanged(LinphoneCore lc, LinphoneEvent ev,
-                                         SubscriptionState state) {
+										 SubscriptionState state) {
 		Log.d("Subscription state changed to "+state+" event name is "+ev.getEventName());
 	}
 
 	@Override
 	public void notifyReceived(LinphoneCore lc, LinphoneEvent ev,
-                               String eventName, LinphoneContent content) {
+							   String eventName, LinphoneContent content) {
 		Log.d("Notify received for event "+eventName);
 		if (content!=null) Log.d("with content "+content.getType()+"/"+content.getSubtype()+" data:"+content.getDataAsString());
 	}
 	@Override
 	public void publishStateChanged(LinphoneCore lc, LinphoneEvent ev,
-                                    PublishState state) {
+									PublishState state) {
 		Log.d("Publish state changed to " + state + " for event name " + ev.getEventName());
 	}
 
@@ -1947,7 +1947,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	@Override
 	public void configuringStatus(LinphoneCore lc,
-                                  RemoteProvisioningState state, String message) {
+								  RemoteProvisioningState state, String message) {
 		Log.d("Remote provisioning status = " + state.toString() + " (" + message + ")");
 
 		if (state == RemoteProvisioningState.ConfiguringSuccessful) {
@@ -1964,17 +1964,17 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 	}
 	@Override
 	public void fileTransferProgressIndication(LinphoneCore lc,
-                                               LinphoneChatMessage message, LinphoneContent content, int progress) {
+											   LinphoneChatMessage message, LinphoneContent content, int progress) {
 
 	}
 	@Override
 	public void fileTransferRecv(LinphoneCore lc, LinphoneChatMessage message,
-                                 LinphoneContent content, byte[] buffer, int size) {
+								 LinphoneContent content, byte[] buffer, int size) {
 
 	}
 	@Override
 	public int fileTransferSend(LinphoneCore lc, LinphoneChatMessage message,
-                                LinphoneContent content, ByteBuffer buffer, int size) {
+								LinphoneContent content, ByteBuffer buffer, int size) {
 		return 0;
 	}
 
@@ -1991,7 +1991,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	@Override
 	public void ecCalibrationStatus(LinphoneCore lc, EcCalibratorStatus status,
-                                    int delay_ms, Object data) {
+									int delay_ms, Object data) {
 		((AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE)).setMode(AudioManager.MODE_NORMAL);
 		mAudioManager.abandonAudioFocus(null);
 		Log.i("Set audio mode on 'Normal'");
@@ -2014,13 +2014,13 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	@Override
 	public void authInfoRequested(LinphoneCore lc, String realm,
-                                  String username, String domain) {
+								  String username, String domain) {
 		// TODO Auto-generated method stub
 
 	}
 	@Override
 	public void authenticationRequested(LinphoneCore lc,
-                                        LinphoneAuthInfo authInfo, AuthMethod method) {
+										LinphoneAuthInfo authInfo, AuthMethod method) {
 		// TODO Auto-generated method stub
 
 	}

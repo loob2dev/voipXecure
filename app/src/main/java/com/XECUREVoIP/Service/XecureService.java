@@ -151,7 +151,7 @@ public final class XecureService extends Service {
 
 	public Handler mHandler = new Handler();
 
-//	private boolean mTestDelayElapsed; // add a timer for testing
+	//	private boolean mTestDelayElapsed; // add a timer for testing
 	private boolean mTestDelayElapsed = true; // no timer
 	private NotificationManager mNM;
 
@@ -552,27 +552,27 @@ public final class XecureService extends Service {
 		int inconId = 0;
 
 		switch (state) {
-		case IDLE:
-			if (!displayServiceNotification()) {
-				stopForegroundCompat(INCALL_NOTIF_ID);
-			} else {
-				mNM.cancel(INCALL_NOTIF_ID);
-			}
-			return;
-		case INCALL:
-			inconId = R.drawable.topbar_call_notification;
-			notificationTextId = R.string.incall_notif_active;
-			break;
-		case PAUSE:
-			inconId = R.drawable.topbar_call_notification;
-			notificationTextId = R.string.incall_notif_paused;
-			break;
-		case VIDEO:
-			inconId = R.drawable.topbar_videocall_notification;
-			notificationTextId = R.string.incall_notif_video;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown state " + state);
+			case IDLE:
+				if (!displayServiceNotification()) {
+					stopForegroundCompat(INCALL_NOTIF_ID);
+				} else {
+					mNM.cancel(INCALL_NOTIF_ID);
+				}
+				return;
+			case INCALL:
+				inconId = R.drawable.topbar_call_notification;
+				notificationTextId = R.string.incall_notif_active;
+				break;
+			case PAUSE:
+				inconId = R.drawable.topbar_call_notification;
+				notificationTextId = R.string.incall_notif_paused;
+				break;
+			case VIDEO:
+				inconId = R.drawable.topbar_videocall_notification;
+				notificationTextId = R.string.incall_notif_video;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown state " + state);
 		}
 
 		if (XecureManager.getLc().getCallsNb() == 0) {
@@ -727,7 +727,7 @@ public final class XecureService extends Service {
 
 	private static final Class<?>[] mSetFgSign = new Class[] {boolean.class};
 	private static final Class<?>[] mStartFgSign = new Class[] {
-		int.class, Notification.class};
+			int.class, Notification.class};
 	private static final Class<?>[] mStopFgSign = new Class[] {boolean.class};
 
 	private Method mSetForeground;
@@ -812,7 +812,7 @@ public final class XecureService extends Service {
 	private void dumpInstalledLinphoneInformation() {
 		PackageInfo info = null;
 		try {
-		    info = getPackageManager().getPackageInfo(getPackageName(),0);
+			info = getPackageManager().getPackageInfo(getPackageName(),0);
 		} catch (NameNotFoundException nnfe) {}
 
 		if (info != null) {
@@ -881,8 +881,8 @@ public final class XecureService extends Service {
 		PendingIntent restartServicePI = null;
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 			restartServicePI = PendingIntent.getForegroundService(
-                    getApplicationContext(), 1, restartService,
-                    PendingIntent.FLAG_ONE_SHOT);
+					getApplicationContext(), 1, restartService,
+					PendingIntent.FLAG_ONE_SHOT);
 		}else {
 			restartServicePI = PendingIntent.getService(
 					getApplicationContext(), 1, restartService,
@@ -915,10 +915,10 @@ public final class XecureService extends Service {
 		instance = null;
 		XecureManager.destroy();
 
-	    // Make sure our notification is gone.
-	    stopForegroundCompat(NOTIF_ID);
-	    mNM.cancel(INCALL_NOTIF_ID);
-	    mNM.cancel(MESSAGE_NOTIF_ID);
+		// Make sure our notification is gone.
+		stopForegroundCompat(NOTIF_ID);
+		mNM.cancel(INCALL_NOTIF_ID);
+		mNM.cancel(MESSAGE_NOTIF_ID);
 
 		super.onDestroy();
 	}
@@ -967,11 +967,11 @@ public final class XecureService extends Service {
 	}
 
 	public void onCallEncryptionChanged(final LinphoneCall call, final boolean encrypted,
-			final String authenticationToken) {
+										final String authenticationToken) {
 	}
 
 	private boolean isPattern() {
- 		SharedPreferences preXecue = getApplicationContext().getSharedPreferences("Xecure", MODE_PRIVATE);
+		SharedPreferences preXecue = getApplicationContext().getSharedPreferences("Xecure", MODE_PRIVATE);
 		String strCrrEncryptionPass = preXecue.getString("pass", "");
 
 		return strCrrEncryptionPass.isEmpty()? true: false;
@@ -1011,7 +1011,7 @@ public final class XecureService extends Service {
 						.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
 						.setXmppDomain(serviceName)
 						.setHostnameVerifier(verifier)
-                        .enableDefaultDebugger()
+						.enableDefaultDebugger()
 						.setPort(9090)
 						.build();
 				connection = new XMPPTCPConnection(config);
@@ -1032,7 +1032,7 @@ public final class XecureService extends Service {
 						chatManager.addIncomingListener(new IncomingChatMessageListener() {
 							@Override
 							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-								if (message.getBody() == null){
+								if (message.getBody().compareTo("") == 0){
 									XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject());
 								} else {
 									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);

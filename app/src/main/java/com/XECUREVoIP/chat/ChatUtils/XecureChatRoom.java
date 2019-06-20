@@ -61,6 +61,7 @@ public class XecureChatRoom {
         try {
             pubKey = mDH.loadEcPublicKey(publicKeyBytes);
             mDH.receivePublicKeyFrom(pubKey);
+            mDH.generateCommonSecretKey();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
@@ -87,7 +88,7 @@ public class XecureChatRoom {
                 byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.encode(mDH.getPublicKey().getEncoded());
                 String pubKey = new String(publicKeyBytes);
                 newMessage.setSubject(pubKey);
-                newMessage.setBody(null);
+                newMessage.setBody("");
                 mChat.send(newMessage);
             } catch (SmackException.NotConnectedException e) {
                 e.printStackTrace();
@@ -98,6 +99,7 @@ public class XecureChatRoom {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            keyExchagned();
         }
     }
 
