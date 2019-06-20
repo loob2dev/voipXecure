@@ -655,7 +655,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		if (index >= 0){
 			XecureChatRoom chatRoom = mChatRooms.get(index);
 			chatRoom.receivePublicKey(subject);
-			chatRoom.keyExchagned();
+//			chatRoom.keyExchagned();
 		}
 	}
 

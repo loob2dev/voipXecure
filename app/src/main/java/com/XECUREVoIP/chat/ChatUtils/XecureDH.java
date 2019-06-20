@@ -1,18 +1,29 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
+import org.spongycastle.jce.provider.BouncyCastleProvider;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.SecretKeySpec;
 
 public class XecureDH {
-    private PrivateKey privateKey;
+    public PrivateKey privateKey;
     private PublicKey  publicKey;
     private PublicKey  receivedPublicKey;
     private byte[]     secretKey;
+
+    private static final String ECDH = "ECDH"; //$NON-NLS-1$
+
+    static {
+        Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);}
 
 
 
@@ -54,7 +65,18 @@ public class XecureDH {
     public void generateCommonSecretKey() {
 
         try {
-            final KeyAgreement keyAgreement = KeyAgreement.getInstance("DH");
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.insertProviderAt(new BouncyCastleProvider(), 1);
+            }
+
+            KeyAgreement keyAgreement = null;
+            try {
+                keyAgreement = KeyAgreement.getInstance(ECDH, BouncyCastleProvider.PROVIDER_NAME);
+
+            }
+            catch (final NoSuchProviderException e) {
+                keyAgreement = KeyAgreement.getInstance(ECDH);
+            }
             keyAgreement.init(privateKey);
 
             keyAgreement.doPhase(receivedPublicKey, true);
@@ -72,10 +94,15 @@ public class XecureDH {
     public void generateKeys() {
 
         try {
-            final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DH");
-            keyPairGenerator.initialize(256);
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.insertProviderAt(new BouncyCastleProvider(), 1);
+            }
 
-            final KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            ECGenParameterSpec ecParamSpec = new ECGenParameterSpec("secp224k1");
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDH",BouncyCastleProvider.PROVIDER_NAME);
+            kpg.initialize(ecParamSpec);
+
+            KeyPair keyPair=kpg.generateKeyPair();
 
             privateKey = keyPair.getPrivate();
             publicKey  = keyPair.getPublic();

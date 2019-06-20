@@ -1,1 +1,1 @@
-include ':app', ':voip-sdk'
+include ':app', ':voip-sdk', ':core-1.58.0.0', ':bcpg-jdk15on-1.58.0.0', ':bcpkix-jdk15on-1.58.0.0', ':prov-1.58.0.0'

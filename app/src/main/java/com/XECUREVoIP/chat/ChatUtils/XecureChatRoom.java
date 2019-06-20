@@ -57,7 +57,8 @@ public class XecureChatRoom {
     }
 
     public void receivePublicKey(String key){
-        EncodedKeySpec keySpec = new X509EncodedKeySpec(key.getBytes());
+        byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.decode(key.getBytes());
+        EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = null;
         PublicKey pubKey = null;
         try {
@@ -140,7 +141,7 @@ public class XecureChatRoom {
             Message newMessage = new Message();
             try {
                 if (!keyExchanged){
-                    byte[] publicKeyBytes = mDH.getPublicKey().getEncoded();
+                    byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.encode(mDH.getPublicKey().getEncoded());
                     String pubKey = new String(publicKeyBytes);
                     newMessage.setSubject(pubKey);
                     //encrypt message
