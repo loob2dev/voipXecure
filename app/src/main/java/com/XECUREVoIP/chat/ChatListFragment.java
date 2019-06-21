@@ -181,7 +181,7 @@ public class ChatListFragment extends Fragment implements OnClickListener, OnIte
 		Animation animation = new AlphaAnimation(0.3f, 1.0f);
 		animation.setDuration(100);
 		view.startAnimation(animation);
-		final String sipUri = ((XecureChatRoom)adapter.getItem(i)).getAddress();
+		final String sipUri = ((XecureChatRoom)adapter.getItem(i)).getId();
 		animation.setAnimationListener(new Animation.AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
@@ -385,10 +385,11 @@ public class ChatListFragment extends Fragment implements OnClickListener, OnIte
 		ArrayList<XecureChatRoom> willRemove = new ArrayList<XecureChatRoom>();
 		for (int i = 0; i < size; i++) {
 			if (chatList.isItemChecked(i)) {
-				willRemove.add(XecureManager.getInstance().getXecureChatRooms().get(i));
+				XecureManager.getInstance().getDeletedRooms().add(XecureManager.getInstance().getXecureChatRooms().get(i));
+				XecureManager.getInstance().getXecureChatRooms().get(i).getHistory().clear();
 			}
 		}
-		XecureManager.getInstance().getXecureChatRooms().removeAll(	willRemove);
+		XecureManager.getInstance().getXecureChatRooms().removeAll(	XecureManager.getInstance().getDeletedRooms());
 		quitEditMode();
 		XecureActivity.instance().updateMissedChatCount();
 	}

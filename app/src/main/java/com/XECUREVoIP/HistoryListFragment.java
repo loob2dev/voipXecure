@@ -537,7 +537,11 @@ public class HistoryListFragment extends Fragment implements OnClickListener, On
 							} else {
 								address = log.getTo();
 							}
-							XecureActivity.instance().setAddresGoToDialerAndCall(address.asStringUriOnly(), address.getDisplayName(), null);
+							String sipUri = address.asStringUriOnly();
+							if (sipUri.contains("@136.144.213.201:8161")){
+								sipUri = sipUri.replace("@136.144.213.201", "@sipmanagement.xecu.re");
+							}
+							XecureActivity.instance().setAddresGoToDialerAndCall(sipUri, address.getDisplayName(), null);
 						}
 					}
 				});

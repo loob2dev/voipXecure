@@ -186,7 +186,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			String address = getArguments().getString("entryId");
 			ArrayList<XecureChatRoom> chatRooms = XecureManager.getInstance().getXecureChatRooms();
 			for (XecureChatRoom room : chatRooms){
-				if (room.getAddress().compareTo(address) != 0)
+				if (room.getId().compareTo(address) != 0)
 					continue;
 				mChatRoom = room;
 				for (XecureChatMessage message : mChatRoom.getHistory()){
@@ -194,8 +194,13 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				}
 				break;
 			}
-			exitNewConversationMode();
+			if (mChatRoom == null){
+				mChatRoom = new XecureChatRoom(address);
+				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
+				mChatRoom.accept();
+			}
 
+			exitNewConversationMode();
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
 			messagesList.deferNotifyDataSetChanged();
@@ -277,8 +282,11 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 	private void sendTextMessage() {
 		if (newChatConversation) {
-			mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
-			XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
+			mChatRoom = XecureManager.getInstance().getChatRoom(searchContactField.getText().toString());
+			if (mChatRoom == null){
+				mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
+				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
+			}
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);
 			mChatRoom.accept();
@@ -539,7 +547,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			button_group.setVisibility(View.GONE);
 		}else if(!mChatRoom.isAccept() && !mChatRoom.isExchanged()){
 			footer.setVisibility(View.GONE);
-			waiting_accept.setText(mChatRoom.getAddress() + getResources().getString(R.string.accept_waiting));
+			waiting_accept.setText(mChatRoom.getAddress() + " " + getResources().getString(R.string.accept_waiting));
 			waiting_accept.setVisibility(View.VISIBLE);
 			button_group.setVisibility(View.VISIBLE);
 		}else{
@@ -570,14 +578,13 @@ public class ChatFragment extends Fragment implements OnClickListener{
 					Bundle bundle = msg.getData();
 					String id = bundle.getString("idFrom");
 
-					if (id != null && id.compareTo(mChatRoom.getAddress()) == 0){
+					if (mChatRoom != null && id != null && id.compareTo(mChatRoom.getId()) == 0){
 						XecureChatMessage message = (XecureChatMessage) msg.obj;
 						message.read();
 						adapter.notifyDataSetChanged();
-						messagesList.deferNotifyDataSetChanged();
-						messagesList.setSelection(adapter.getCount() - 1);
-
 					}
+					messagesList.deferNotifyDataSetChanged();
+					messagesList.setSelection(adapter.getCount() - 1);
 					XecureActivity.instance().updateMissedChatCount();
 			}
 			super.handleMessage(msg);

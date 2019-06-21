@@ -76,7 +76,10 @@ public class ContactDetailsFragment extends Fragment implements OnClickListener 
 		@Override
 		public void onClick(View v) {
 			if (XecureActivity.isInstanciated()) {
-				XecureActivity.instance().displayChat(v.getTag().toString(), null, null);
+				String strAdress = v.getTag().toString().contains(":8161") ?
+						v.getTag().toString().replace("sip:", "").replace("@sipmanagement.xecu.re:8161", "")
+						: v.getTag().toString().replace("sip:", "").replace("@sipmanagement.xecu.re", "");
+				XecureActivity.instance().displayChat(strAdress, null, null);
 			}
 		}
 	};

@@ -44,11 +44,15 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 	private TextView contactName, contactAddress, time, date;
 	private String sipUri, displayName, pictureUri;
 	private XecureContact contact;
+	LinphoneAddress lAddress = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 		sipUri = getArguments().getString("SipUri");
+		if (sipUri.contains("@136.144.213.201:8161")){
+			sipUri = sipUri.replace("@136.144.213.201", "@sipmanagement.xecu.re");
+		}
 		displayName = getArguments().getString("DisplayName");
 		pictureUri = getArguments().getString("PictureUri");
 		String status = getArguments().getString("CallStatus");
@@ -108,7 +112,6 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 		Long longDate = Long.parseLong(callDate);
 		date.setText(XecureUtils.timestampToHumanDate(getActivity(),longDate,getString(R.string.history_detail_date_format)));
 
-		LinphoneAddress lAddress = null;
 		try {
 			lAddress = LinphoneCoreFactory.instance().createLinphoneAddress(sipUri);
 		} catch (LinphoneCoreException e) {
@@ -118,8 +121,8 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 		if (lAddress != null) {
 
 			String strAdress = lAddress.asStringUriOnly().contains(":8161") ?
-					lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@136.144.213.201:8161", "")
-					: lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@136.144.213.201", "");
+					lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@sipmanagement.xecu.re:8161", "")
+					: lAddress.asStringUriOnly().replace("sip:", "NUMBER:").replace("@sipmanagement.xecu.re", "");
 			contactAddress.setText(strAdress);
 			contact = ContactsManager.getInstance().findContactFromAddress(lAddress);
 			if (contact != null) {
@@ -176,9 +179,9 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 			}
 			XecureActivity.instance().setAddresGoToDialerAndCall(sipUri, displayName, pictureUri == null ? null : Uri.parse(pictureUri));
 		} else if (id == R.id.chat) {
-			String strAdress = sipUri.contains(":8161") ?
-					sipUri.replace("sip:", "NUMBER:").replace("@136.144.213.201:8161", "")
-					: sipUri.replace("sip:", "NUMBER:").replace("@136.144.213.201", "");
+			String strAdress = lAddress.asStringUriOnly().contains(":8161") ?
+					lAddress.asStringUriOnly().replace("sip:", "").replace("@sipmanagement.xecu.re:8161", "")
+					: lAddress.asStringUriOnly().replace("sip:", "").replace("@sipmanagement.xecu.re", "");
 			XecureActivity.instance().displayChat(strAdress, null, null);
 		} else if (id == R.id.add_contact) {
 			String uri = sipUri;
@@ -192,7 +195,7 @@ public class HistoryDetailFragment extends Fragment implements OnClickListener {
 //			if (addr != null && addr.getDisplayName() != null)
 //				XecureActivity.instance().displayContactsForEdition(addr.asStringUriOnly(), addr.getDisplayName());
 //			else {
-				uri = uri.replace("sip:", "").replace("@xecu.re:8161", "");
+				uri = uri.replace("sip:", "").replace("@sipmanagement.xecu.re:8161", "");
 				XecureActivity.instance().displayContactEditor(uri);
 //			}
 		} else if (id == R.id.goto_contact) {

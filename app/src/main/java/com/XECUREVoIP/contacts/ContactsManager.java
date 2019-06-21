@@ -272,6 +272,51 @@ public class ContactsManager extends ContentObserver {
 		return null;
 	}
 
+	public synchronized XecureContact findContactFromNumber(String number) {
+		ContactDBHelper dbHelper = new ContactDBHelper(context);
+		Cursor cursor = dbHelper.getDataFromNumber(number);
+		if (cursor != null){
+			SecurityUtils utils = new SecurityUtils(Build.ID);
+
+			XecureContact contact = new XecureContact();
+			try{
+				long id = cursor.getLong(0);
+				contact.setID(id);
+				String strFirstName = null;
+				if (cursor.getString(2) != null)
+					strFirstName = utils.decrypt(cursor.getString(2));
+				String strLastName = null;
+				if (cursor.getString(1) != null)
+					strLastName = utils.decrypt(cursor.getString(1));
+				contact.setFirstNameAndLastName(strFirstName, strLastName);
+				if (cursor.getString(3) != null)
+					contact.setEmail(utils.decrypt(cursor.getString(3)));
+				if (cursor.getString(4) != null)
+					contact.addNumberOrAddress(new XecureNumberOrAddress(utils.decrypt(cursor.getString(4)), true));
+				for (int i = 5; i < 7; i++) {
+					if (cursor.getString(i) == null)
+						continue;
+					contact.addNumberOrAddress(new XecureNumberOrAddress(utils.decrypt(cursor.getString(i)), false));
+				}
+				if (cursor.getString(7) != null)
+					contact.setPhotoUri(utils.decrypt(cursor.getString(7)));
+				if (cursor.getString(8) != null)
+					contact.setCompany(utils.decrypt(cursor.getString(8)));
+				if (cursor.getString(9) != null)
+					contact.setDepartment(utils.decrypt(cursor.getString(9)));
+				if (cursor.getString(10) != null)
+					contact.setSubDepartment(utils.decrypt(cursor.getString(10)));
+
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+
+			return contact;
+		}
+
+		return null;
+	}
+
 	public synchronized XecureContact findContactFromPhoneNumber(String phoneNumber) {
 		LinphoneCore lc = XecureManager.getLcIfManagerNotDestroyedOrNull();
 		LinphoneProxyConfig lpc = null;

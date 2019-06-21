@@ -205,7 +205,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	private static List<LinphoneChatMessage.LinphoneChatMessageListener> simpleListeners = new ArrayList<LinphoneChatMessage.LinphoneChatMessageListener>();
 	private AbstractXMPPConnection mConnection = null;
-	private ArrayList<XecureChatRoom> mChatRooms;
+	private ArrayList<XecureChatRoom> mChatRooms, mDeletedRooms;
 
 	public static void addListener(LinphoneChatMessage.LinphoneChatMessageListener listener) {
 		if (!simpleListeners.contains(listener)) {
@@ -245,6 +245,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		mR = c.getResources();
 		mPendingChatFileMessage = new ArrayList<LinphoneChatMessage>();
 		mChatRooms = new ArrayList<XecureChatRoom>();
+		mDeletedRooms = new ArrayList<XecureChatRoom>();
 	}
 
 	private static final int LINPHONE_VOLUME_STREAM = STREAM_VOICE_CALL;
@@ -623,31 +624,67 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		return mChatRooms;
 	}
 
-	public void add(String from, XecureChatMessage chatMessage, Chat chat, String subject) {
-		int index = -1;
+	public ArrayList<XecureChatRoom> getDeletedRooms(){
+		return mDeletedRooms;
+	}
+
+	public boolean add(String from, XecureChatMessage chatMessage, Chat chat, String subject) {
+		XecureChatRoom tmpRoom = null;
 		for (int i = 0; i < mChatRooms.size(); i++){
-			if (mChatRooms.get(i).getAddress().compareTo(from) == 0){
-				index = i;
+			if (mChatRooms.get(i).getId().compareTo(from) == 0){
+				tmpRoom = mChatRooms.get(i);
 				break;
 			}
 		}
-		if (index < 0){
+		if (tmpRoom == null){
+			for (int i = 0; i < mDeletedRooms.size(); i++){
+				if (mDeletedRooms.get(i).getId().compareTo(from) == 0){
+					tmpRoom = mDeletedRooms.get(i);
+					mChatRooms.add(tmpRoom);
+					break;
+				}
+			}
+		}
+		if (tmpRoom == null){
 			XecureChatRoom chatRoom = new XecureChatRoom(from, chat, subject);
-			chatRoom.createNewMessage(chatMessage);
+			if (chatRoom.createNewMessage(chatMessage) == false)
+				return false;
 			mChatRooms.add(chatRoom);
 		}else{
-			XecureChatRoom chatRoom = mChatRooms.get(index);
-			chatRoom.createNewMessage(chatMessage);
+			XecureChatRoom chatRoom = tmpRoom;
+			if (chatRoom.createNewMessage(chatMessage) == false)
+				return false;
 			chatRoom.init(chat);
-			mChatRooms.set(index, chatRoom);
 		}
+
+		return true;
+	}
+
+	public XecureChatRoom getChatRoom(String from){
+		XecureChatRoom tmpRoom = null;
+		for (int i = 0; i < mChatRooms.size(); i++){
+			if (mChatRooms.get(i).getId().compareTo(from) == 0){
+				tmpRoom = mChatRooms.get(i);
+				break;
+			}
+		}
+		if (tmpRoom == null){
+			for (int i = 0; i < mDeletedRooms.size(); i++){
+				if (mDeletedRooms.get(i).getId().compareTo(from) == 0){
+					tmpRoom = mDeletedRooms.get(i);
+					mChatRooms.add(tmpRoom);
+					break;
+				}
+			}
+		}
+		return tmpRoom;
 	}
 
 
 	public void receivePulicKey(String entryId, String subject) {
 		int index = -1;
 		for (int i = 0; i < mChatRooms.size(); i++){
-			if (mChatRooms.get(i).getAddress().compareTo(entryId) == 0){
+			if (mChatRooms.get(i).getId().compareTo(entryId) == 0){
 				index = i;
 				break;
 			}

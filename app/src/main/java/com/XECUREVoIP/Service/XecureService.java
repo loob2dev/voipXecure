@@ -1043,7 +1043,8 @@ public final class XecureService extends Service {
 									}
 								} else {
 									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
-									XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject());
+									if (XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject()) == false)
+										return;
 									String fromId = from.getLocalpart().toString();
 									displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
 									try {

@@ -2,11 +2,14 @@ package com.XECUREVoIP.chat.ChatUtils;
 
 import android.util.Log;
 
+import com.XECUREVoIP.XecureContact;
 import com.XECUREVoIP.XecureManager;
+import com.XECUREVoIP.contacts.ContactsManager;
 import com.XECUREVoIP.security.SecurityUtils;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.Message;
@@ -15,6 +18,7 @@ import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
+import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -79,10 +83,8 @@ public class XecureChatRoom {
         }
         AbstractXMPPConnection connection = XecureManager.getInstance().getSmackConnection();
         if(connection != null) {
-            if (mChat == null){
-                ChatManager chatManager = ChatManager.getInstanceFor(connection);
-                mChat = chatManager.chatWith(jid);
-            }
+            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            mChat = chatManager.chatWith(jid);
             Message newMessage = new Message();
             try {
                 byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.encode(mDH.getPublicKey().getEncoded());
@@ -128,10 +130,8 @@ public class XecureChatRoom {
         }
         AbstractXMPPConnection connection = XecureManager.getInstance().getSmackConnection();
         if(connection != null) {
-            if (mChat == null){
-                ChatManager chatManager = ChatManager.getInstanceFor(connection);
-                mChat = chatManager.chatWith(jid);
-            }
+            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            mChat = chatManager.chatWith(jid);
             Message newMessage = new Message();
             try {
                 if (!keyExchanged){
@@ -165,7 +165,11 @@ public class XecureChatRoom {
     }
 
     public String getAddress() {
-        return mEntryId;
+        XecureContact contact = ContactsManager.getInstance().findContactFromNumber(mEntryId);
+        if (contact == null)
+            return mEntryId;
+
+        return contact.getFullName();
     }
 
     public int getUnreadMessagesCount() {
@@ -182,18 +186,25 @@ public class XecureChatRoom {
         return mMessages;
     }
 
-    public void createNewMessage(XecureChatMessage message) {
+    public boolean createNewMessage(XecureChatMessage message) {
         if (keyExchanged){
-            message.setBody(mDH.decrypt(message.getBody()));
+            String decriptMsg = mDH.decrypt(message.getBody());
+            if (decriptMsg.compareTo("") == 0)
+                return false;
+            message.setBody(decriptMsg);
             mMessages.add(message);
         }else {
             try {
-                message.setBody(mAES256.decrypt(message.getBody()));
+                String decriptMsg = mAES256.decrypt(message.getBody());
+                if (decriptMsg.compareTo("") == 0)
+                    return false;
+                message.setBody(decriptMsg);
                 mMessages.add(message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        return true;
     }
 
     public void setXecureKey(byte[] xecureKey) {
@@ -202,5 +213,9 @@ public class XecureChatRoom {
 
     public void init(Chat chat) {
         mChat = chat;
+    }
+
+    public String getId() {
+        return mEntryId;
     }
 }
