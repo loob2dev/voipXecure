@@ -49,6 +49,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -77,6 +78,8 @@ import com.XECUREVoIP.assistant.AssistantActivity;
 import com.XECUREVoIP.call.CallActivity;
 import com.XECUREVoIP.call.CallIncomingActivity;
 import com.XECUREVoIP.call.CallManager;
+import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
+import com.XECUREVoIP.chat.ChatUtils.DelChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatRoom;
 import com.XECUREVoIP.contacts.ContactsManager;
@@ -245,10 +248,70 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		mR = c.getResources();
 		mPendingChatFileMessage = new ArrayList<LinphoneChatMessage>();
 		mChatRooms = new ArrayList<XecureChatRoom>();
+		initChatRoomsFromDB();
 		mDeletedRooms = new ArrayList<XecureChatRoom>();
+		initDelRoomsFromDB();
 	}
 
-	private static final int LINPHONE_VOLUME_STREAM = STREAM_VOICE_CALL;
+	private void initDelRoomsFromDB() {
+		DelChatRoomDBHelper dbHelper = new DelChatRoomDBHelper(getContext());
+		Cursor cursor = dbHelper.getAllData();
+		try {
+			while (cursor.moveToNext()){
+				long id = cursor.getLong(0);
+				String entryId = null;
+				if (cursor.getString(1) != null)
+					entryId = cursor.getString(1);
+				XecureChatRoom chatRoom = new XecureChatRoom(entryId);
+				chatRoom.setDbId(id);
+				String key = null;
+				if (cursor.getString(4) != null)
+					key = cursor.getString(4);
+				chatRoom.setXecureKey(key);
+				if (cursor.getString(2) != null && cursor.getInt(2) == 1)
+                    chatRoom.keyExchange();
+				if (cursor.getString(3) != null && cursor.getInt(3) == 1)
+					chatRoom.accept();
+
+				mDeletedRooms.add(chatRoom);
+			}
+		}catch (Exception e){
+			Log.e(e);
+		}finally {
+			cursor.close();
+		}
+	}
+
+	private void initChatRoomsFromDB() {
+        ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
+        Cursor cursor = dbHelper.getAllData();
+        try {
+            while (cursor.moveToNext()){
+                long id = cursor.getLong(0);
+                String entryId = null;
+                if (cursor.getString(1) != null)
+                    entryId = cursor.getString(1);
+				XecureChatRoom chatRoom = new XecureChatRoom(entryId);
+				chatRoom.setDbId(id);
+				String key = null;
+				if (cursor.getString(4) != null)
+					key = cursor.getString(4);
+				chatRoom.setXecureKey(key);
+                if (cursor.getString(2) != null && cursor.getInt(2) == 1)
+                    chatRoom.keyExchange();
+                if (cursor.getString(3) != null && cursor.getInt(3) == 1)
+                    chatRoom.accept();
+
+                mChatRooms.add(chatRoom);
+            }
+        }catch (Exception e){
+            Log.e(e);
+        }finally {
+            cursor.close();
+        }
+    }
+
+    private static final int LINPHONE_VOLUME_STREAM = STREAM_VOICE_CALL;
 	private static final int dbStep = 4;
 	/** Called when the activity is first created. */
 	private final String mLPConfigXsd;
@@ -650,6 +713,8 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			if (chatRoom.createNewMessage(chatMessage) == false)
 				return false;
 			mChatRooms.add(chatRoom);
+			ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
+			chatRoom.setDbId(dbHelper.insertData(chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 		}else{
 			XecureChatRoom chatRoom = tmpRoom;
 			if (chatRoom.createNewMessage(chatMessage) == false)
@@ -693,6 +758,9 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			XecureChatRoom chatRoom = mChatRooms.get(index);
 			chatRoom.receivePublicKey(subject);
 			chatRoom.keyExchagned();
+
+			ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
+			chatRoom.setDbId(dbHelper.updateData(new Long(chatRoom.getDbId()).toString(), chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 		}
 	}
 

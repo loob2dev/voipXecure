@@ -1012,7 +1012,7 @@ public final class XecureService extends Service {
 						.setXmppDomain(serviceName)
 						.setHostnameVerifier(verifier)
 						.enableDefaultDebugger()
-						.setPort(9090)
+						.setPort(5222)
 						.build();
 				connection = new XMPPTCPConnection(config);
 
@@ -1025,7 +1025,7 @@ public final class XecureService extends Service {
 					ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(connection);
 					reconnectionManager.setEnabledPerDefault(true);
 					reconnectionManager.enableAutomaticReconnection();
-					reconnectionManager.setFixedDelay(15);
+					reconnectionManager.setFixedDelay(3);
 
 					if(connection.isAuthenticated() && connection.isConnected()){
 						ChatManager chatManager = ChatManager.getInstanceFor(connection);

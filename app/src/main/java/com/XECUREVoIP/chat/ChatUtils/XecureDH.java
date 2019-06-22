@@ -189,4 +189,8 @@ public class XecureDH {
         EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKey);
         return kf.generatePublic(pubKeySpec);
     }
+
+    public byte[] getKey() {
+        return secretKey;
+    }
 }

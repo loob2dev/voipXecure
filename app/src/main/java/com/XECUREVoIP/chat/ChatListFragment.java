@@ -48,6 +48,8 @@ import com.XECUREVoIP.Service.XecureService;
 import com.XECUREVoIP.XecureActivity;
 import com.XECUREVoIP.XecureManager;
 import com.XECUREVoIP.XecureUtils;
+import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
+import com.XECUREVoIP.chat.ChatUtils.DelChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatRoom;
 
@@ -385,8 +387,16 @@ public class ChatListFragment extends Fragment implements OnClickListener, OnIte
 		ArrayList<XecureChatRoom> willRemove = new ArrayList<XecureChatRoom>();
 		for (int i = 0; i < size; i++) {
 			if (chatList.isItemChecked(i)) {
-				XecureManager.getInstance().getDeletedRooms().add(XecureManager.getInstance().getXecureChatRooms().get(i));
-				XecureManager.getInstance().getXecureChatRooms().get(i).getHistory().clear();
+				XecureChatRoom chatRoom = XecureManager.getInstance().getXecureChatRooms().get(i);
+
+				XecureManager.getInstance().getDeletedRooms().add(chatRoom);
+				chatRoom.getHistory().clear();
+
+				ChatRoomDBHelper roomDBHelper = new ChatRoomDBHelper(getActivity());
+				roomDBHelper.deleteData(chatRoom.getDbId());
+
+				DelChatRoomDBHelper delChatRoomDBHelper = new DelChatRoomDBHelper(getActivity());
+				chatRoom.setDbId(delChatRoomDBHelper.insertData(chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 			}
 		}
 		XecureManager.getInstance().getXecureChatRooms().removeAll(	XecureManager.getInstance().getDeletedRooms());

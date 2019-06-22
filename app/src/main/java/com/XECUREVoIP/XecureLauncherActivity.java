@@ -42,6 +42,7 @@ import com.XECUREVoIP.Service.AboveOreoObserveService;
 import com.XECUREVoIP.Service.BelowOreoObserveService;
 import com.XECUREVoIP.Service.XecureService;
 import com.XECUREVoIP.call.CallActivity;
+import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
 import com.XECUREVoIP.contacts.ContactDBHelper;
 import com.XECUREVoIP.contacts.ContactsManager;
 import com.XECUREVoIP.security.LoginWithPassActivity;
@@ -152,6 +153,16 @@ public class XecureLauncherActivity extends Activity {
 			return;
 		else
 			deleteDatabase(ContactDBHelper.DATABASE_NAME);
+
+		ChatRoomDBHelper chat_dbHelper = new ChatRoomDBHelper(this);
+		Cursor chat_cursor = chat_dbHelper.getAllData();
+		if (chat_cursor.getColumnIndex(ChatRoomDBHelper.COL_ENTRY_ID) > 0
+				&& chat_cursor.getColumnIndex(ChatRoomDBHelper.COL_ACCEPT) > 0
+				&& chat_cursor.getColumnIndex(ChatRoomDBHelper.COL_EXCHANGED) > 0
+				&& chat_cursor.getColumnIndex(ChatRoomDBHelper.COL_KEY) > 0)
+			return;
+		else
+			deleteDatabase(ChatRoomDBHelper.DATABASE_NAME);
 	}
 
 	private void runObserveService() {

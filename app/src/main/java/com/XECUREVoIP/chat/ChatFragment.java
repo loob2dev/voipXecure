@@ -54,6 +54,7 @@ import com.XECUREVoIP.XecureActivity;
 import com.XECUREVoIP.XecureContact;
 import com.XECUREVoIP.XecureManager;
 import com.XECUREVoIP.XecureUtils;
+import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatRoom;
 import com.XECUREVoIP.chat.ChatUtils.XecureDH;
@@ -198,6 +199,9 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				mChatRoom = new XecureChatRoom(address);
 				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
 				mChatRoom.accept();
+
+				ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
+				mChatRoom.setDbId(dbHelper.insertData(mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
 			}
 
 			exitNewConversationMode();
@@ -274,6 +278,8 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				mChatRoom.accept();
 				mChatRoom.sendPublicKey();
 				exitNewConversationMode();
+                ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
+                mChatRoom.setDbId(dbHelper.updateData(new Long(mChatRoom.getDbId()).toString(), mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
 				break;
 			case R.id.block:
 				break;
@@ -286,6 +292,9 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			if (mChatRoom == null){
 				mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
 				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
+
+				ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
+				mChatRoom.setDbId(dbHelper.insertData(mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
 			}
 			adapter = new XecureChatMessageAdapter(getActivity(), mChatRoom.getHistory());
 			messagesList.setAdapter(adapter);

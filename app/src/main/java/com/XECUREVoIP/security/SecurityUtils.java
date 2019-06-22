@@ -3,6 +3,7 @@ package com.XECUREVoIP.security;
 import android.os.Build;
 import android.util.Base64;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 
 import javax.crypto.Cipher;

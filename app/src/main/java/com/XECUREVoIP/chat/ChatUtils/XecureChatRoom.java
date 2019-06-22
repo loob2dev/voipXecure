@@ -1,5 +1,6 @@
 package com.XECUREVoIP.chat.ChatUtils;
 
+import android.provider.Settings;
 import android.util.Log;
 
 import com.XECUREVoIP.XecureContact;
@@ -19,6 +20,7 @@ import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -26,13 +28,13 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 public class XecureChatRoom {
+    private long mIdDB;
     private String mEntryId;
     private ArrayList<XecureChatMessage> mMessages;
     private final String TAG = "XECURE CHAT";
-    private byte[] mKey;
+    private String mKey = "xecurechat";
     private Chat mChat;
     private XecureDH mDH;
-    private SecurityUtils mAES256;
     private boolean keyExchanged = false;
     private boolean accepted = false;
 
@@ -42,7 +44,15 @@ public class XecureChatRoom {
         mChat = null;
         mDH = new XecureDH();
         mDH.generateKeys();
-        mAES256 = new SecurityUtils("xecurechat");
+    }
+
+    public XecureChatRoom(String entry, Chat chat, String subject) {
+        mEntryId = entry;
+        mMessages = new ArrayList<XecureChatMessage>();
+        mChat = chat;
+        mDH = new XecureDH();
+        mDH.generateKeys();
+        receivePublicKey(subject);
     }
 
     public boolean isAccept(){
@@ -107,16 +117,11 @@ public class XecureChatRoom {
 
     public void keyExchagned(){
         keyExchanged = true;
+        mKey = new String(mDH.getKey(), StandardCharsets.US_ASCII);
     }
 
-    public XecureChatRoom(String entry, Chat chat, String subject) {
-        mEntryId = entry;
-        mMessages = new ArrayList<XecureChatMessage>();
-        mChat = chat;
-        mDH = new XecureDH();
-        mDH.generateKeys();
-        mAES256 = new SecurityUtils("xecurechat");
-        receivePublicKey(subject);
+    public void keyExchange(){
+        keyExchanged = true;
     }
 
     public void sendMessage(String message) {
@@ -138,11 +143,9 @@ public class XecureChatRoom {
                     byte[] publicKeyBytes = org.bouncycastle.util.encoders.Base64.encode(mDH.getPublicKey().getEncoded());
                     String pubKey = new String(publicKeyBytes);
                     newMessage.setSubject(pubKey);
-                    //encrypt message
-                    newMessage.setBody(mAES256.encrypt(message));
-                } else {
-                    newMessage.setBody(mDH.encrypt(message));
                 }
+                SecurityUtils utils = new SecurityUtils(mKey);
+                newMessage.setBody(utils.encrypt(message));
                 mChat.send(newMessage);
 
             } catch (SmackException.NotConnectedException e) {
@@ -187,28 +190,21 @@ public class XecureChatRoom {
     }
 
     public boolean createNewMessage(XecureChatMessage message) {
-        if (keyExchanged){
-            String decriptMsg = mDH.decrypt(message.getBody());
-            if (decriptMsg.compareTo("") == 0)
-                return false;
-            message.setBody(decriptMsg);
+        SecurityUtils utils = new SecurityUtils(mKey);
+        try {
+            message.setBody(utils.decrypt(message.getBody()));
             mMessages.add(message);
-        }else {
-            try {
-                String decriptMsg = mAES256.decrypt(message.getBody());
-                if (decriptMsg.compareTo("") == 0)
-                    return false;
-                message.setBody(decriptMsg);
-                mMessages.add(message);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return true;
     }
 
-    public void setXecureKey(byte[] xecureKey) {
+    public void setXecureKey(String xecureKey) {
         mKey = xecureKey;
+    }
+    public String getXecureKey() {
+        return mKey;
     }
 
     public void init(Chat chat) {
@@ -217,5 +213,13 @@ public class XecureChatRoom {
 
     public String getId() {
         return mEntryId;
+    }
+
+    public void setDbId(long idDB){
+        mIdDB = idDB;
+    }
+
+    public long getDbId(){
+        return mIdDB;
     }
 }
