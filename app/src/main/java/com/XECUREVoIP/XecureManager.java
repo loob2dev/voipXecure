@@ -78,6 +78,7 @@ import com.XECUREVoIP.assistant.AssistantActivity;
 import com.XECUREVoIP.call.CallActivity;
 import com.XECUREVoIP.call.CallIncomingActivity;
 import com.XECUREVoIP.call.CallManager;
+import com.XECUREVoIP.chat.ChatUtils.ChatMessageDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.DelChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
@@ -86,6 +87,7 @@ import com.XECUREVoIP.contacts.ContactsManager;
 
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.packet.Message;
 import org.linphone.core.CallDirection;
@@ -138,6 +140,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.sql.Array;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -262,14 +265,14 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 				String entryId = null;
 				if (cursor.getString(1) != null)
 					entryId = cursor.getString(1);
-				XecureChatRoom chatRoom = new XecureChatRoom(entryId);
+				XecureChatRoom chatRoom = new XecureChatRoom(entryId, getContext());
 				chatRoom.setDbId(id);
 				String key = null;
 				if (cursor.getString(4) != null)
 					key = cursor.getString(4);
 				chatRoom.setXecureKey(key);
 				if (cursor.getString(2) != null && cursor.getInt(2) == 1)
-                    chatRoom.keyExchange();
+					chatRoom.keyExchange();
 				if (cursor.getString(3) != null && cursor.getInt(3) == 1)
 					chatRoom.accept();
 
@@ -283,35 +286,35 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 	}
 
 	private void initChatRoomsFromDB() {
-        ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
-        Cursor cursor = dbHelper.getAllData();
-        try {
-            while (cursor.moveToNext()){
-                long id = cursor.getLong(0);
-                String entryId = null;
-                if (cursor.getString(1) != null)
-                    entryId = cursor.getString(1);
-				XecureChatRoom chatRoom = new XecureChatRoom(entryId);
+		ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
+		Cursor cursor = dbHelper.getAllData();
+		try {
+			while (cursor.moveToNext()){
+				long id = cursor.getLong(0);
+				String entryId = null;
+				if (cursor.getString(1) != null)
+					entryId = cursor.getString(1);
+				XecureChatRoom chatRoom = new XecureChatRoom(entryId, getContext());
 				chatRoom.setDbId(id);
 				String key = null;
 				if (cursor.getString(4) != null)
 					key = cursor.getString(4);
 				chatRoom.setXecureKey(key);
-                if (cursor.getString(2) != null && cursor.getInt(2) == 1)
-                    chatRoom.keyExchange();
-                if (cursor.getString(3) != null && cursor.getInt(3) == 1)
-                    chatRoom.accept();
+				if (cursor.getString(2) != null && cursor.getInt(2) == 1)
+					chatRoom.keyExchange();
+				if (cursor.getString(3) != null && cursor.getInt(3) == 1)
+					chatRoom.accept();
 
-                mChatRooms.add(chatRoom);
-            }
-        }catch (Exception e){
-            Log.e(e);
-        }finally {
-            cursor.close();
-        }
-    }
+				mChatRooms.add(chatRoom);
+			}
+		}catch (Exception e){
+			Log.e(e);
+		}finally {
+			cursor.close();
+		}
+	}
 
-    private static final int LINPHONE_VOLUME_STREAM = STREAM_VOICE_CALL;
+	private static final int LINPHONE_VOLUME_STREAM = STREAM_VOICE_CALL;
 	private static final int dbStep = 4;
 	/** Called when the activity is first created. */
 	private final String mLPConfigXsd;
@@ -691,79 +694,131 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		return mDeletedRooms;
 	}
 
-	public boolean add(String from, XecureChatMessage chatMessage, Chat chat, String subject) {
-		XecureChatRoom tmpRoom = null;
-		for (int i = 0; i < mChatRooms.size(); i++){
-			if (mChatRooms.get(i).getId().compareTo(from) == 0){
-				tmpRoom = mChatRooms.get(i);
-				break;
-			}
-		}
+	public boolean add(String from, XecureChatMessage chatMessage) {
+		XecureChatRoom tmpRoom = getChatRoom(from);
 		if (tmpRoom == null){
-			for (int i = 0; i < mDeletedRooms.size(); i++){
-				if (mDeletedRooms.get(i).getId().compareTo(from) == 0){
-					tmpRoom = mDeletedRooms.get(i);
-					mChatRooms.add(tmpRoom);
-					break;
-				}
-			}
-		}
-		if (tmpRoom == null){
-			XecureChatRoom chatRoom = new XecureChatRoom(from, chat, subject);
+			XecureChatRoom chatRoom = new XecureChatRoom(from, getContext());
+			mChatRooms.add(chatRoom);
 			if (chatRoom.createNewMessage(chatMessage) == false)
 				return false;
-			mChatRooms.add(chatRoom);
 			ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
 			chatRoom.setDbId(dbHelper.insertData(chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 		}else{
 			XecureChatRoom chatRoom = tmpRoom;
 			if (chatRoom.createNewMessage(chatMessage) == false)
 				return false;
-			chatRoom.init(chat);
 		}
+		//store db
+//		ChatMessageDBHelper dbHelper = new ChatMessageDBHelper(getContext(), from);
+//		chatMessage.setDbId(dbHelper.insertData(
+//				chatMessage.getId(),
+//				chatMessage.getSenderid(),
+//				chatMessage.getBody(),
+//				chatMessage.getDateString(),
+//				chatMessage.isOutgoing(),
+//				chatMessage.isRead(),
+//				chatMessage.isDelivered()));
 
 		return true;
 	}
 
+	public void replyDelver(Chat chat, String subject, String entryId) {
+		XecureChatRoom chatRoom = getChatRoom(entryId);
+
+		Message response = new Message();
+		response.setSubject(XecureChatRoom.DELIVERED);
+		response.setBody(subject);
+		try {
+			chat.send(response);
+		} catch (SmackException.NotConnectedException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void delivered(String entryId, String msgId, Handler handler) {
+		XecureChatRoom chatRoom = getChatRoom(entryId);
+		if (chatRoom == null)
+			return;
+
+		ArrayList<XecureChatMessage> messages = chatRoom.getHistory();
+		for (int i = 0; i < messages.size(); i++){
+			if (messages.get(i).getId().compareTo(msgId) == 0){
+				messages.get(i).delivered();
+				ChatMessageDBHelper dbHelper = new ChatMessageDBHelper(getContext(), chatRoom.getId());
+				messages.get(i).setDbId(dbHelper.insertData(
+						messages.get(i).getId(),
+						messages.get(i).getSenderid(),
+						messages.get(i).getBody(),
+						messages.get(i).getDateString(),
+						messages.get(i).isOutgoing(),
+						messages.get(i).isRead(),
+						messages.get(i).isDelivered()));
+			}
+		}
+		android.os.Message msg = new android.os.Message();
+		msg.arg1 = 4;
+		if (XecureActivity.isInstanciated() && XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && handler != null) {
+			handler.sendMessage(msg);
+		}
+
+	}
+
 	public XecureChatRoom getChatRoom(String from){
-		XecureChatRoom tmpRoom = null;
+		XecureChatRoom chatRoom = null;
 		for (int i = 0; i < mChatRooms.size(); i++){
 			if (mChatRooms.get(i).getId().compareTo(from) == 0){
-				tmpRoom = mChatRooms.get(i);
+				chatRoom = mChatRooms.get(i);
 				break;
 			}
 		}
-		if (tmpRoom == null){
+		if (chatRoom == null){
 			for (int i = 0; i < mDeletedRooms.size(); i++){
 				if (mDeletedRooms.get(i).getId().compareTo(from) == 0){
-					tmpRoom = mDeletedRooms.get(i);
-					mChatRooms.add(tmpRoom);
+					chatRoom = mDeletedRooms.get(i);
+					mChatRooms.add(chatRoom);
 					break;
 				}
 			}
 		}
-		return tmpRoom;
+		return chatRoom;
 	}
 
 
-	public void receivePulicKey(String entryId, String subject) {
-		int index = -1;
-		for (int i = 0; i < mChatRooms.size(); i++){
-			if (mChatRooms.get(i).getId().compareTo(entryId) == 0){
-				index = i;
+	public void receivePulicKey(String entryId, String type, String subject, Handler handler) {
+		XecureChatRoom chatRoom = getChatRoom(entryId);
+		if (chatRoom == null){
+			chatRoom = new XecureChatRoom(entryId, getContext());
+			mChatRooms.add(chatRoom);
+		}
+		android.os.Message msg = new android.os.Message();
+		if (type.compareTo(XecureChatRoom.PUB_KEY) == 0 && chatRoom.isExchanged())
+			return;
+
+		chatRoom.receivePublicKey(subject);
+		switch (type){
+			case XecureChatRoom.PUB_KEY_ACCEPT:
+				chatRoom.keyExchagned();
+				msg.arg1 = 0;
 				break;
-			}
+			case XecureChatRoom.PUB_KEY_REQ:
+				chatRoom.sendPublicKey(XecureChatRoom.PUB_KEY_RES);
+				chatRoom.keyExchagned();
+				chatRoom.reSendMissedMessages();
+				break;
+			case XecureChatRoom.PUB_KEY_RES:
+				chatRoom.keyExchagned();
+				chatRoom.reSendMissedMessages();
 		}
-		if (index >= 0){
-			XecureChatRoom chatRoom = mChatRooms.get(index);
-			chatRoom.receivePublicKey(subject);
-			chatRoom.keyExchagned();
 
-			ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
-			chatRoom.setDbId(dbHelper.updateData(new Long(chatRoom.getDbId()).toString(), chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
+		if (XecureActivity.isInstanciated() && XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && handler != null) {
+			handler.sendMessage(msg);
 		}
+
+		ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
+		chatRoom.setDbId(dbHelper.updateData(new Long(chatRoom.getDbId()).toString(), chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 	}
-
 
 	public static interface AddressType {
 		void setText(CharSequence s);

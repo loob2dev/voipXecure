@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import com.XECUREVoIP.FragmentsAvailable;
 import com.XECUREVoIP.chat.ChatFragment;
 import com.XECUREVoIP.chat.ChatUtils.XecureChatMessage;
+import com.XECUREVoIP.chat.ChatUtils.XecureChatRoom;
 import com.XECUREVoIP.contacts.ContactsManager;
 import com.XECUREVoIP.KeepAliveReceiver;
 import com.XECUREVoIP.R;
@@ -836,7 +837,7 @@ public final class XecureService extends Service {
 			bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
 		} catch (Exception e) {
 		}
-		String key = "@xecu.re:8161";
+		String key = "@sipmanagement.xecu.re:8161";
 		if (text.contains(key)){
 			text = text.substring(text.indexOf(key) + key.length());
 		}
@@ -987,7 +988,13 @@ public final class XecureService extends Service {
 		new Thread(){
 			@Override
 			public void run() {
-
+				//notify start connection to chat fragment
+				android.os.Message msgStart = new android.os.Message();
+				msgStart.arg1 = 2;
+				if (XecureActivity.isInstanciated() && XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
+					chatHandler.sendMessage(msgStart);
+				}
+				//
 				HostnameVerifier verifier = new HostnameVerifier() {
 					@Override
 					public boolean verify(String hostname, SSLSession session) {
@@ -1015,6 +1022,7 @@ public final class XecureService extends Service {
 						.setPort(5222)
 						.build();
 				connection = new XMPPTCPConnection(config);
+				connection.disconnect();
 
 
 				try {
@@ -1029,55 +1037,27 @@ public final class XecureService extends Service {
 
 					if(connection.isAuthenticated() && connection.isConnected()){
 						ChatManager chatManager = ChatManager.getInstanceFor(connection);
-						chatManager.addIncomingListener(new IncomingChatMessageListener() {
-							@Override
-							public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-								if (message.getBody().compareTo("") == 0){
-									XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject());
-									if (XecureActivity.isInstanciated()){
-										if (chatlistHandler != null) {
-											android.os.Message msg = new android.os.Message();
-											msg.arg1 = 0;
-											chatHandler.sendMessage(msg);
-										}
-									}
-								} else {
-									XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
-									if (XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, chat, message.getSubject()) == false)
-										return;
-									String fromId = from.getLocalpart().toString();
-									displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
-									try {
-										if (XecureActivity.isInstanciated()){
-											Bundle bundle = new Bundle();
-											bundle.putString("idFrom", fromId);
-											android.os.Message msg = new android.os.Message();
-											msg.setData(bundle);
-											msg.obj = chatMessage;
-											msg.arg1 = 1;
-											if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
-												chatHandler.sendMessage(msg);
-											}
-											XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
-											if (chatlistHandler != null) {
-												chatlistHandler.sendEmptyMessage(0);
-											}
-										}
-									}catch (Exception e){
-										e.printStackTrace();
-									}
-								}
-							}
-						});
+						//notify success connection to chat fragment
+						android.os.Message msgSuccess = new android.os.Message();
+						msgSuccess.arg1 = 3;
+						if (XecureActivity.isInstanciated() && XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
+							chatHandler.sendMessage(msgSuccess);
+						}
+						//
+						chatManager.addIncomingListener(incomingChatMessageListener);
 						XecureManager.getInstance().setSmackConnection(connection);
 					}
 				} catch (SmackException e) {
+					connectOpenfire();
 					e.printStackTrace();
 				} catch (IOException e) {
+					connectOpenfire();
 					e.printStackTrace();
 				} catch (XMPPException e) {
+					connectOpenfire();
 					e.printStackTrace();
 				} catch (InterruptedException e) {
+					connectOpenfire();
 					e.printStackTrace();
 				}
 			}
@@ -1085,5 +1065,48 @@ public final class XecureService extends Service {
 
 	}
 
+	private IncomingChatMessageListener incomingChatMessageListener = new IncomingChatMessageListener() {
+		@Override
+		public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
+			if (message.getSubject().contains(XecureChatRoom.KEY) ){
+				XecureManager.getInstance().receivePulicKey(from.getLocalpart().toString(), message.getSubject(), message.getBody(), chatHandler);
+			}	else if (message.getSubject().compareTo(XecureChatRoom.DELIVERED) == 0){
+				XecureManager.getInstance().delivered(from.getLocalpart().toString(), message.getBody(), chatHandler);
+			}	else {
+				XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
+				chatMessage.setSenderId(message.getSubject());
+				if (XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage) == false){
+					XecureChatRoom chatRoom = XecureManager.getInstance().getChatRoom(from.getLocalpart().toString());
+					chatRoom.sendPublicKey(XecureChatRoom.PUB_KEY_REQ);
+					return;
+				}
+				else {
+					XecureManager.getInstance().replyDelver(chat, message.getSubject(), from.getLocalpart().toString());
+				}
+				String fromId = from.getLocalpart().toString();
+				SharedPreferences pres = getApplication().getSharedPreferences("UserInfo", Context.MODE_PRIVATE);
+				final String username = pres.getString("username", "");
+				displayMessageNotification(username, fromId, fromId, chatMessage.getBody());
+				try {
+					if (XecureActivity.isInstanciated()){
+						Bundle bundle = new Bundle();
+						bundle.putString("idFrom", fromId);
+						android.os.Message msg = new android.os.Message();
+						msg.setData(bundle);
+						msg.obj = chatMessage;
+						msg.arg1 = 1;
+						if (XecureActivity.instance().getCurrentFragment().compareTo(FragmentsAvailable.CHAT) == 0 && chatHandler != null) {
+							chatHandler.sendMessage(msg);
+						}
+						XecureActivity.instance().mNotifyReceiceMesage.sendEmptyMessage(0);
+						if (chatlistHandler != null) {
+							chatlistHandler.sendEmptyMessage(0);
+						}
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+	};
 }
-

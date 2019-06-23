@@ -61,11 +61,13 @@ import com.XECUREVoIP.chat.ChatUtils.XecureDH;
 import com.XECUREVoIP.compatibility.Compatibility;
 import com.XECUREVoIP.contacts.ContactEditorFragment;
 
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener;
 import org.jxmpp.jid.EntityBareJid;
 
+import java.lang.reflect.Array;
 import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,6 +86,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private Button accept, block;
 	private LayoutInflater inflater;
 	private Bitmap defaultBitmap;
+	private String tmpMesssage;
 
 	private boolean isEditMode = false;
 	private XecureContact contact;
@@ -196,7 +199,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				break;
 			}
 			if (mChatRoom == null){
-				mChatRoom = new XecureChatRoom(address);
+				mChatRoom = new XecureChatRoom(address, getContext());
 				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
 				mChatRoom.accept();
 
@@ -210,6 +213,15 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			messagesList.deferNotifyDataSetChanged();
 			messagesList.setSelection(adapter.getCount() - 1);
 			((XecureActivity)getActivity()).updateMissedChatCount();
+		}
+
+		AbstractXMPPConnection connection = XecureManager.getInstance().getSmackConnection();
+		if (connection == null){
+			message.setEnabled(false);
+			tmpMesssage = message.getText().toString();
+			message.setText(null);
+			sendMessage.setVisibility(View.GONE);
+			message.setHint("Connecting...");
 		}
 
 		XecureService.instance().setChatHandler(mReceiveMessage);
@@ -276,10 +288,12 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				break;
 			case R.id.accept:
 				mChatRoom.accept();
-				mChatRoom.sendPublicKey();
+				mChatRoom.keyExchagned();
+				mChatRoom.sendPublicKey(XecureChatRoom.PUB_KEY_ACCEPT);
+				mChatRoom.replyDelver();
 				exitNewConversationMode();
-                ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
-                mChatRoom.setDbId(dbHelper.updateData(new Long(mChatRoom.getDbId()).toString(), mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
+				ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
+				mChatRoom.setDbId(dbHelper.updateData(new Long(mChatRoom.getDbId()).toString(), mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
 				break;
 			case R.id.block:
 				break;
@@ -290,7 +304,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 		if (newChatConversation) {
 			mChatRoom = XecureManager.getInstance().getChatRoom(searchContactField.getText().toString());
 			if (mChatRoom == null){
-				mChatRoom = new XecureChatRoom(searchContactField.getText().toString());
+				mChatRoom = new XecureChatRoom(searchContactField.getText().toString(), getContext());
 				XecureManager.getInstance().getXecureChatRooms().add(mChatRoom);
 
 				ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getActivity());
@@ -301,8 +315,10 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			mChatRoom.accept();
 			exitNewConversationMode();
 			sipUri = searchContactField.getText().toString();
+
+			mChatRoom.sendPublicKey(XecureChatRoom.PUB_KEY);
 		}
-		mChatRoom.sendMessage(message.getText().toString());
+		mChatRoom.sendMessage(message.getText().toString(), getActivity());
 		message.setText("");
 		adapter.notifyDataSetChanged();
 		messagesList.setSelection(adapter.getCount() - 1);
@@ -444,8 +460,14 @@ public class ChatFragment extends Fragment implements OnClickListener{
 			RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 			if(message.isOutgoing()){
 				holder.imdmLayout.setVisibility(View.VISIBLE);
-				holder.imdmIcon.setImageResource(R.drawable.chat_delivered);
-				holder.imdmLabel.setText(R.string.delivered);
+				if (message.isDelivered()) {
+					holder.imdmLabel.setText(R.string.delivered);
+					holder.imdmIcon.setImageResource(R.drawable.chat_delivered);
+				} else {
+					holder.imdmLabel.setVisibility(View.INVISIBLE);
+					holder.imdmIcon.setVisibility(View.INVISIBLE);
+				}
+
 				holder.imdmLabel.setTextColor(getResources().getColor(R.color.colorD));
 				holder.messageText.setTextColor(R.color.colorQ);
 				layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -591,10 +613,33 @@ public class ChatFragment extends Fragment implements OnClickListener{
 						XecureChatMessage message = (XecureChatMessage) msg.obj;
 						message.read();
 						adapter.notifyDataSetChanged();
+						messagesList.deferNotifyDataSetChanged();
+						messagesList.setSelection(adapter.getCount() - 1);
 					}
-					messagesList.deferNotifyDataSetChanged();
-					messagesList.setSelection(adapter.getCount() - 1);
 					XecureActivity.instance().updateMissedChatCount();
+					break;
+				case 2:
+					message.setEnabled(false);
+					tmpMesssage = message.getText().toString();
+					message.setText(null);
+					sendMessage.setVisibility(View.GONE);
+					message.setHint("Connecting...");
+					break;
+				case 3:
+					message.setEnabled(true);
+					sendMessage.setVisibility(View.VISIBLE);
+					message.setHint(null);
+					message.setText(tmpMesssage);
+					if (mChatRoom != null){
+						mChatRoom.reSendMissedMessages();
+					}
+				case 4:
+					if (adapter != null){
+						adapter.notifyDataSetChanged();
+						messagesList.deferNotifyDataSetChanged();
+						messagesList.setSelection(adapter.getCount() - 1);
+					}
+					break;
 			}
 			super.handleMessage(msg);
 		}
@@ -649,12 +694,6 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				willRemove.add(mChatRoom.getHistory().get(i));
 			}
 		}
-//		if (willRemove.size() == mChatRoom.getHistory().size()){
-//		    XecureManager.getInstance().getXecureChatRooms().remove(mChatRoom);
-//            getFragmentManager().popBackStackImmediate();
-//            XecureService.instance().setChatHandler(null);
-//            return;
-//        }
 		mChatRoom.getHistory().removeAll(willRemove);
 		adapter.notifyDataSetChanged();
 	}
