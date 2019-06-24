@@ -78,6 +78,7 @@ import com.XECUREVoIP.assistant.AssistantActivity;
 import com.XECUREVoIP.call.CallActivity;
 import com.XECUREVoIP.call.CallIncomingActivity;
 import com.XECUREVoIP.call.CallManager;
+import com.XECUREVoIP.chat.ChatUtils.BlockChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.ChatMessageDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.ChatRoomDBHelper;
 import com.XECUREVoIP.chat.ChatUtils.DelChatRoomDBHelper;
@@ -211,7 +212,7 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 	private static List<LinphoneChatMessage.LinphoneChatMessageListener> simpleListeners = new ArrayList<LinphoneChatMessage.LinphoneChatMessageListener>();
 	private AbstractXMPPConnection mConnection = null;
-	private ArrayList<XecureChatRoom> mChatRooms, mDeletedRooms;
+	private ArrayList<XecureChatRoom> mChatRooms, mDeletedRooms, mBlockRooms;
 
 	public static void addListener(LinphoneChatMessage.LinphoneChatMessageListener listener) {
 		if (!simpleListeners.contains(listener)) {
@@ -254,6 +255,37 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		initChatRoomsFromDB();
 		mDeletedRooms = new ArrayList<XecureChatRoom>();
 		initDelRoomsFromDB();
+		mBlockRooms = new ArrayList<XecureChatRoom>();
+		initBlockRoomsFromDB();
+	}
+
+	private void initBlockRoomsFromDB() {
+		BlockChatRoomDBHelper dbHelper = new BlockChatRoomDBHelper(getContext());
+		Cursor cursor = dbHelper.getAllData();
+		try {
+			while (cursor.moveToNext()){
+				long id = cursor.getLong(0);
+				String entryId = null;
+				if (cursor.getString(1) != null)
+					entryId = cursor.getString(1);
+				XecureChatRoom chatRoom = new XecureChatRoom(entryId, getContext());
+				chatRoom.setDbId(id);
+				String key = null;
+				if (cursor.getString(4) != null)
+					key = cursor.getString(4);
+				chatRoom.setXecureKey(key);
+				if (cursor.getString(2) != null && cursor.getInt(2) == 1)
+					chatRoom.keyExchange();
+				if (cursor.getString(3) != null && cursor.getInt(3) == 1)
+					chatRoom.accept();
+
+				mBlockRooms.add(chatRoom);
+			}
+		}catch (Exception e){
+			Log.e(e);
+		}finally {
+			cursor.close();
+		}
 	}
 
 	private void initDelRoomsFromDB() {
@@ -690,11 +722,15 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 		return mChatRooms;
 	}
 
+	public ArrayList<XecureChatRoom> getBlockChatRooms() {
+		return mBlockRooms;
+	}
+
 	public ArrayList<XecureChatRoom> getDeletedRooms(){
 		return mDeletedRooms;
 	}
 
-	public boolean add(String from, XecureChatMessage chatMessage) {
+	public boolean add(String from, XecureChatMessage chatMessage, String subject) {
 		XecureChatRoom tmpRoom = getChatRoom(from);
 		if (tmpRoom == null){
 			XecureChatRoom chatRoom = new XecureChatRoom(from, getContext());
@@ -705,6 +741,13 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 			chatRoom.setDbId(dbHelper.insertData(chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
 		}else{
 			XecureChatRoom chatRoom = tmpRoom;
+			ArrayList<XecureChatMessage> history = chatRoom.getHistory();
+			for (int i = 0; i < history.size(); i++){
+				if (!history.get(i).isOutgoing() && history.get(i).getSenderid().compareTo(subject) == 0){
+					return true;
+				}
+			}
+
 			if (chatRoom.createNewMessage(chatMessage) == false)
 				return false;
 		}
@@ -818,6 +861,15 @@ public class XecureManager implements LinphoneCoreListener, LinphoneChatMessage.
 
 		ChatRoomDBHelper dbHelper = new ChatRoomDBHelper(getContext());
 		chatRoom.setDbId(dbHelper.updateData(new Long(chatRoom.getDbId()).toString(), chatRoom.getId(), chatRoom.isExchanged(), chatRoom.isAccept(), chatRoom.getXecureKey()));
+	}
+
+	public boolean checkBlockStatus(String entryId) {
+		for (int i = 0; i < mBlockRooms.size(); i++){
+			if (mBlockRooms.get(i).getId().compareTo(entryId) == 0)
+				return true;
+		}
+
+		return false;
 	}
 
 	public static interface AddressType {

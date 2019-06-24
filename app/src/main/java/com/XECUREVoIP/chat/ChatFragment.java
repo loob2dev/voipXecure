@@ -296,6 +296,10 @@ public class ChatFragment extends Fragment implements OnClickListener{
 				mChatRoom.setDbId(dbHelper.updateData(new Long(mChatRoom.getDbId()).toString(), mChatRoom.getId(), mChatRoom.isExchanged(), mChatRoom.isAccept(), mChatRoom.getXecureKey()));
 				break;
 			case R.id.block:
+				XecureManager.getInstance().getXecureChatRooms().remove(mChatRoom);
+				XecureManager.getInstance().getBlockChatRooms().add(mChatRoom);
+				getFragmentManager().popBackStackImmediate();
+				XecureService.instance().setChatHandler(null);
 				break;
 		}
 	}

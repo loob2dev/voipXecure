@@ -1075,7 +1075,9 @@ public final class XecureService extends Service {
 			}	else {
 				XecureChatMessage chatMessage = new XecureChatMessage(message.getBody(), false);
 				chatMessage.setSenderId(message.getSubject());
-				if (XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage) == false){
+				if (XecureManager.getInstance().checkBlockStatus(from.getLocalpart().toString()))
+					return;
+				if (XecureManager.getInstance().add(from.getLocalpart().toString(), chatMessage, message.getSubject()) == false){
 					XecureChatRoom chatRoom = XecureManager.getInstance().getChatRoom(from.getLocalpart().toString());
 					chatRoom.sendPublicKey(XecureChatRoom.PUB_KEY_REQ);
 					return;
