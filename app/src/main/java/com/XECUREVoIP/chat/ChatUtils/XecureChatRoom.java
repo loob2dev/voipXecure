@@ -175,6 +175,7 @@ public class XecureChatRoom {
     public void sendMessage(String message, Context context) {
         checkConnection();
         XecureChatMessage xecureMessage = new XecureChatMessage(message, true);
+        mMessages.add(xecureMessage);
         xecureMessage.read();
         EntityBareJid jid = null;
         try {
@@ -203,7 +204,6 @@ public class XecureChatRoom {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            mMessages.add(xecureMessage);
         }
         //store db
 //        ChatMessageDBHelper dbHelper = new ChatMessageDBHelper(context, mEntryId);

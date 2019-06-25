@@ -93,6 +93,28 @@
             android:layout_weight="0.5"
             android:background="@drawable/assistant_button"/>
     </LinearLayout>
+	<LinearLayout
+		android:id="@+id/refreshConnecting"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/remote_composing"
+		android:orientation="horizontal"
+		android:gravity="center"
+		android:visibility="gone"
+		android:layout_centerVertical="true">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="20dp"
+			android:layout_marginRight="20dp"
+			style="@style/font11"
+			android:text="Connecting..."/>
+		<ProgressBar
+			android:id="@+id/progressBar2"
+			style="?android:attr/progressBarStyle"
+			android:layout_width="30dp"
+			android:layout_height="30dp" />
+	</LinearLayout>
 
 	<LinearLayout
 		android:id="@+id/footer"
@@ -173,7 +195,7 @@
 		android:transcriptMode="normal"
 		android:dividerHeight="10dp"
 		android:cacheColorHint="@color/transparent"
-		android:layout_above="@id/remote_composing"
+		android:layout_above="@id/refreshConnecting"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_margin="10dp"

@@ -1059,11 +1059,21 @@ public final class XecureService extends Service {
 				} catch (InterruptedException e) {
 					connectOpenfire();
 					e.printStackTrace();
+				}finally {
+					reconnectHandler.sendEmptyMessageDelayed(0,
+							XecureActivity.isInstanciated() ? 600000 : 60000);
 				}
 			}
 		} .start();
 
 	}
+
+	Handler reconnectHandler = new Handler(){
+		@Override
+		public void handleMessage(android.os.Message msg) {
+			connectOpenfire();
+		}
+	};
 
 	private IncomingChatMessageListener incomingChatMessageListener = new IncomingChatMessageListener() {
 		@Override

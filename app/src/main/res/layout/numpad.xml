@@ -32,11 +32,11 @@
 
 <TableRow android:layout_weight="1" android:gravity="center">
 	<com.XECUREVoIP.ui.Digit
-        android:id="@+id/DigitStar" android:text="*"  style="@style/DialerDigit" android:background="@drawable/numpad_star_digit" android:soundEffectsEnabled="true" />
+        android:id="@+id/DigitStar" android:text="*"  style="@style/DialerDigit" android:background="@drawable/numpad_star_digit" android:soundEffectsEnabled="true" android:visibility="invisible"/>
 	<com.XECUREVoIP.ui.Digit
         android:id="@+id/Digit00"   android:text="0+" style="@style/DialerDigit" android:background="@drawable/numpad_zero" android:soundEffectsEnabled="true" />
 	<com.XECUREVoIP.ui.Digit
-        android:id="@+id/DigitHash" android:text="#"  style="@style/DialerDigit" android:background="@drawable/numpad_sharp" android:soundEffectsEnabled="true" />
+        android:id="@+id/DigitHash" android:text="#"  style="@style/DialerDigit" android:background="@drawable/numpad_sharp" android:soundEffectsEnabled="true" android:visibility="invisible"/>
 </TableRow>
 
 </TableLayout>

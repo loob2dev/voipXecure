@@ -81,7 +81,7 @@ public class ChatFragment extends Fragment implements OnClickListener{
 	private TextView contactName, remoteComposing, waiting_accept;
 	private ImageView back, backToCall;
 	private EditText searchContactField;
-	private LinearLayout topBar, editList, footer, button_group;
+	private LinearLayout topBar, editList, footer, button_group, refreshConnecting;
 	private ListView messagesList, resultContactsSearch;
 	private Button accept, block;
 	private LayoutInflater inflater;
@@ -116,6 +116,8 @@ public class ChatFragment extends Fragment implements OnClickListener{
 		topBar = (LinearLayout) view.findViewById(R.id.top_bar);
 		footer = (LinearLayout) view.findViewById(R.id.footer);
 		button_group = (LinearLayout) view.findViewById(R.id.button_group);
+
+		refreshConnecting = (LinearLayout) view.findViewById(R.id.refreshConnecting);
 
 		sendMessage = (ImageView) view.findViewById(R.id.send_message);
 		sendMessage.setOnClickListener(this);
@@ -217,11 +219,12 @@ public class ChatFragment extends Fragment implements OnClickListener{
 
 		AbstractXMPPConnection connection = XecureManager.getInstance().getSmackConnection();
 		if (connection == null){
-			message.setEnabled(false);
-			tmpMesssage = message.getText().toString();
-			message.setText(null);
-			sendMessage.setVisibility(View.GONE);
-			message.setHint("Connecting...");
+//			message.setEnabled(false);
+//			tmpMesssage = message.getText().toString();
+//			message.setText(null);
+//			sendMessage.setVisibility(View.GONE);
+//			message.setHint("Connecting...");
+			refreshConnecting.setVisibility(View.VISIBLE);
 		}
 
 		XecureService.instance().setChatHandler(mReceiveMessage);
@@ -623,17 +626,19 @@ public class ChatFragment extends Fragment implements OnClickListener{
 					XecureActivity.instance().updateMissedChatCount();
 					break;
 				case 2:
-					message.setEnabled(false);
-					tmpMesssage = message.getText().toString();
-					message.setText(null);
-					sendMessage.setVisibility(View.GONE);
-					message.setHint("Connecting...");
+//					message.setEnabled(false);
+//					tmpMesssage = message.getText().toString();
+//					message.setText(null);
+//					sendMessage.setVisibility(View.GONE);
+//					message.setHint("Connecting...");
+					refreshConnecting.setVisibility(View.VISIBLE);
 					break;
 				case 3:
-					message.setEnabled(true);
-					sendMessage.setVisibility(View.VISIBLE);
-					message.setHint(null);
-					message.setText(tmpMesssage);
+//					message.setEnabled(true);
+//					sendMessage.setVisibility(View.VISIBLE);
+//					message.setHint(null);
+//					message.setText(tmpMesssage);
+					refreshConnecting.setVisibility(View.GONE);
 					if (mChatRoom != null){
 						mChatRoom.reSendMissedMessages();
 					}
